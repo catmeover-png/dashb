@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LMTS UniV3 Dashboard</title>
+  <title>LMTS / USDC UniV3 Dashboard</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body {
@@ -12,32 +12,42 @@
       background: #0f1115;
       color: #f5f7fa;
     }
+
     .wrap {
-      max-width: 1280px;
+      max-width: 1380px;
       margin: 24px auto;
       padding: 0 16px;
     }
+
+    h1 {
+      margin-bottom: 18px;
+    }
+
     .cards {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 12px;
       margin-bottom: 16px;
     }
+
     .card {
       background: #171a21;
       border: 1px solid #2a2f3a;
       border-radius: 12px;
       padding: 14px;
     }
+
     .label {
       font-size: 12px;
       color: #9aa4b2;
       margin-bottom: 8px;
     }
+
     .value {
       font-size: 24px;
       font-weight: 700;
     }
+
     .panel {
       background: #171a21;
       border: 1px solid #2a2f3a;
@@ -45,36 +55,83 @@
       padding: 16px;
       margin-bottom: 16px;
     }
+
     .grid {
       display: grid;
-      grid-template-columns: 2fr 1fr;
+      grid-template-columns: 1.5fr 1fr;
       gap: 16px;
+      align-items: start;
     }
+
     table {
       width: 100%;
       border-collapse: collapse;
       font-size: 13px;
     }
+
     th, td {
       padding: 8px 10px;
       border-bottom: 1px solid #2a2f3a;
       text-align: left;
+      vertical-align: top;
     }
+
     th {
       color: #9aa4b2;
       font-weight: 600;
+      position: sticky;
+      top: 0;
+      background: #171a21;
     }
+
     .ours {
       color: #53d769;
       font-weight: 600;
     }
+
     .ext {
       color: #8ea2ff;
       font-weight: 600;
     }
+
+    .inrange {
+      color: #53d769;
+      font-weight: 700;
+    }
+
+    .outrange {
+      color: #9aa4b2;
+    }
+
+    .table-wrap {
+      max-height: 520px;
+      overflow: auto;
+    }
+
     canvas {
       width: 100% !important;
       height: 420px !important;
+    }
+
+    .subtle {
+      color: #9aa4b2;
+      font-size: 12px;
+      margin-top: 6px;
+    }
+
+    @media (max-width: 1100px) {
+      .cards {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .cards {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
@@ -92,18 +149,19 @@
         <div class="value" id="openPositions">-</div>
       </div>
       <div class="card">
-        <div class="label">Our Liquidity</div>
-        <div class="value" id="ourLiquidity">-</div>
+        <div class="label">Our Value (USD)</div>
+        <div class="value" id="ourValueUsd">-</div>
       </div>
       <div class="card">
-        <div class="label">Unique Owners</div>
-        <div class="value" id="owners">-</div>
+        <div class="label">External Value (USD)</div>
+        <div class="value" id="extValueUsd">-</div>
       </div>
     </div>
 
     <div class="panel">
       <h3>Liquidity Distribution</h3>
       <canvas id="liqChart"></canvas>
+      <div class="subtle">Green = our liquidity, purple = external liquidity, red line = current price.</div>
     </div>
 
     <div class="grid">
@@ -113,14 +171,32 @@
       </div>
 
       <div class="panel">
-        <h3>Current Positions</h3>
+        <h3>Current Snapshot</h3>
+        <table>
+          <tbody>
+            <tr><th>Our USDC</th><td id="ourUsdc">-</td></tr>
+            <tr><th>Our LMTS</th><td id="ourLmts">-</td></tr>
+            <tr><th>External USDC</th><td id="extUsdc">-</td></tr>
+            <tr><th>External LMTS</th><td id="extLmts">-</td></tr>
+            <tr><th>Unique Owners</th><td id="owners">-</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Current Positions</h3>
+      <div class="table-wrap">
         <table>
           <thead>
             <tr>
+              <th>Token ID</th>
               <th>Label</th>
               <th>Range</th>
-              <th>Liquidity</th>
-              <th>In range</th>
+              <th>In Range</th>
+              <th>Cur USDC</th>
+              <th>Cur LMTS</th>
+              <th>Current Value USD</th>
             </tr>
           </thead>
           <tbody id="positionsBody"></tbody>
@@ -144,17 +220,54 @@
     }
 
     function fmtShort(v) {
+      if (!Number.isFinite(v)) return "-";
       if (Math.abs(v) >= 1e12) return (v / 1e12).toFixed(2) + "T";
       if (Math.abs(v) >= 1e9) return (v / 1e9).toFixed(2) + "B";
       if (Math.abs(v) >= 1e6) return (v / 1e6).toFixed(2) + "M";
       if (Math.abs(v) >= 1e3) return (v / 1e3).toFixed(2) + "K";
-      return v.toFixed(2);
+      return v.toLocaleString(undefined, { maximumFractionDigits: 2 });
+    }
+
+    function fmtUsd(v) {
+      if (!Number.isFinite(v)) return "-";
+      return "$" + v.toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+    }
+
+    function fmtPrice(v) {
+      if (!Number.isFinite(v)) return "-";
+      return "$" + v.toLocaleString(undefined, {
+        minimumFractionDigits: 4,
+        maximumFractionDigits: 6
+      });
     }
 
     async function loadJson(url) {
       const r = await fetch(url);
       if (!r.ok) throw new Error(`Fetch failed: ${url}`);
       return r.json();
+    }
+
+    function buildCurrentPriceMarkerDataset(bucketRows, currentPrice) {
+      const labels = bucketRows.map(r => num(r.price_lower_usd_per_lmts || r.lower_usd));
+      const maxY = Math.max(
+        ...bucketRows.map(r => num(r.our_liquidity) + num(r.ext_liquidity)),
+        1
+      );
+
+      return {
+        type: "line",
+        label: "Current price",
+        data: labels.map(label => (Math.abs(label - currentPrice) < 0.005 ? maxY : null)),
+        borderColor: "#ff5c5c",
+        backgroundColor: "#ff5c5c",
+        pointRadius: 0,
+        borderWidth: 2,
+        spanGaps: false,
+        tension: 0
+      };
     }
 
     async function main() {
@@ -165,44 +278,98 @@
       ]);
 
       const latest = snapshots[snapshots.length - 1] || {};
+      const currentPrice = num(latest.price_usd_per_lmts);
 
-      document.getElementById("price").textContent = "$" + fmtShort(num(latest.price_usd_per_lmts));
+      const ourValueUsd =
+        num(latest.our_cur_usdc) + num(latest.our_cur_lmts) * currentPrice;
+
+      const extValueUsd =
+        num(latest.ext_cur_usdc) + num(latest.ext_cur_lmts) * currentPrice;
+
+      document.getElementById("price").textContent = fmtPrice(currentPrice);
       document.getElementById("openPositions").textContent = String(num(latest.open_positions));
-      document.getElementById("ourLiquidity").textContent = fmtShort(num(latest.our_liquidity));
+      document.getElementById("ourValueUsd").textContent = fmtUsd(ourValueUsd);
+      document.getElementById("extValueUsd").textContent = fmtUsd(extValueUsd);
+
+      document.getElementById("ourUsdc").textContent = fmtUsd(num(latest.our_cur_usdc));
+      document.getElementById("ourLmts").textContent = fmtShort(num(latest.our_cur_lmts));
+      document.getElementById("extUsdc").textContent = fmtUsd(num(latest.ext_cur_usdc));
+      document.getElementById("extLmts").textContent = fmtShort(num(latest.ext_cur_lmts));
       document.getElementById("owners").textContent = String(num(latest.unique_real_owners));
 
-      const bucketLabels = buckets.map(r => num(r.lower_usd || r.price_lower_usd_per_lmts));
+      const bucketLabels = buckets.map(r => num(r.price_lower_usd_per_lmts || r.lower_usd));
       const ourLiq = buckets.map(r => num(r.our_liquidity));
       const extLiq = buckets.map(r => num(r.ext_liquidity));
 
       new Chart(document.getElementById("liqChart"), {
-        type: "bar",
         data: {
           labels: bucketLabels,
           datasets: [
             {
+              type: "bar",
               label: "Our liquidity",
               data: ourLiq,
               backgroundColor: "#53d769",
-              stack: "liq"
+              stack: "liq",
+              barPercentage: 1.0,
+              categoryPercentage: 1.0
             },
             {
+              type: "bar",
               label: "External liquidity",
               data: extLiq,
               backgroundColor: "#6d7cff",
-              stack: "liq"
-            }
+              stack: "liq",
+              barPercentage: 1.0,
+              categoryPercentage: 1.0
+            },
+            buildCurrentPriceMarkerDataset(buckets, currentPrice)
           ]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
+          interaction: {
+            mode: "index",
+            intersect: false
+          },
           scales: {
-            x: { stacked: true, ticks: { color: "#c7d0d9" } },
-            y: { stacked: true, ticks: { color: "#c7d0d9" } }
+            x: {
+              stacked: true,
+              ticks: {
+                color: "#c7d0d9",
+                maxRotation: 45,
+                minRotation: 45,
+                callback: function(value) {
+                  const v = this.getLabelForValue(value);
+                  return Number(v).toFixed(2);
+                }
+              }
+            },
+            y: {
+              stacked: true,
+              ticks: {
+                color: "#c7d0d9",
+                callback: function(value) {
+                  return fmtShort(Number(value));
+                }
+              }
+            }
           },
           plugins: {
-            legend: { labels: { color: "#f5f7fa" } }
+            legend: {
+              labels: { color: "#f5f7fa" }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  if (context.dataset.label === "Current price") {
+                    return `Current price: ${fmtPrice(currentPrice)}`;
+                  }
+                  return `${context.dataset.label}: ${fmtShort(num(context.raw))}`;
+                }
+              }
+            }
           }
         }
       });
@@ -220,7 +387,8 @@
               data: prices,
               borderColor: "#8ea2ff",
               backgroundColor: "#8ea2ff",
-              tension: 0.2
+              tension: 0.2,
+              pointRadius: 3
             }
           ]
         },
@@ -228,33 +396,68 @@
           responsive: true,
           maintainAspectRatio: false,
           scales: {
-            x: { ticks: { color: "#c7d0d9" } },
-            y: { ticks: { color: "#c7d0d9" } }
+            x: {
+              ticks: { color: "#c7d0d9" }
+            },
+            y: {
+              ticks: {
+                color: "#c7d0d9",
+                callback: function(value) {
+                  return fmtPrice(Number(value));
+                }
+              }
+            }
           },
           plugins: {
-            legend: { labels: { color: "#f5f7fa" } }
+            legend: {
+              labels: { color: "#f5f7fa" }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return `Price: ${fmtPrice(num(context.raw))}`;
+                }
+              }
+            }
           }
         }
       });
 
       const body = document.getElementById("positionsBody");
+
       positions
-        .sort((a, b) => num(b.liquidity) - num(a.liquidity))
+        .map(p => {
+          const curUsdc = num(p.cur_usdc);
+          const curLmts = num(p.cur_lmts);
+          const currentValueUsd = curUsdc + curLmts * currentPrice;
+
+          return {
+            ...p,
+            currentValueUsd
+          };
+        })
+        .sort((a, b) => b.currentValueUsd - a.currentValueUsd)
         .forEach(p => {
           const tr = document.createElement("tr");
-          const range = `${p.price_lower_usd_per_lmts} – ${p.price_upper_usd_per_lmts}`;
+          const range = `${Number(p.price_lower_usd_per_lmts).toFixed(4)} – ${Number(p.price_upper_usd_per_lmts).toFixed(4)}`;
+
           tr.innerHTML = `
-            <td class="${p.type === "ours" ? "ours" : "ext"}">${p.label || p.type}</td>
+            <td>${p.token_id || "-"}</td>
+            <td class="${p.type === "ours" ? "ours" : "ext"}">${p.label || p.type || "-"}</td>
             <td>${range}</td>
-            <td>${fmtShort(num(p.liquidity))}</td>
-            <td>${String(p.in_range)}</td>
+            <td class="${String(p.in_range).toUpperCase() === "TRUE" ? "inrange" : "outrange"}">
+              ${String(p.in_range).toUpperCase() === "TRUE" ? "YES" : "NO"}
+            </td>
+            <td>${fmtUsd(num(p.cur_usdc))}</td>
+            <td>${fmtShort(num(p.cur_lmts))}</td>
+            <td>${fmtUsd(p.currentValueUsd)}</td>
           `;
           body.appendChild(tr);
         });
     }
 
     main().catch(err => {
-      document.body.insertAdjacentHTML("beforeend", `<pre>${err.message}</pre>`);
+      document.body.insertAdjacentHTML("beforeend", `<pre style="color:#ff7b7b;padding:16px;">${err.message}</pre>`);
       console.error(err);
     });
   </script>
