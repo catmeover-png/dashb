@@ -6,21 +6,42 @@
   <title>LMTS / USDC UniV3 Dashboard</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
+    :root {
+      --bg: #0b0f14;
+      --panel: #121821;
+      --panel-2: #171f2b;
+      --border: #263041;
+      --text: #eef3f8;
+      --muted: #95a2b3;
+      --green: #7CFF4D;
+      --green-soft: rgba(124, 255, 77, 0.18);
+      --purple: rgba(125, 138, 255, 0.35);
+      --purple-line: #7d8aff;
+      --danger: #ff6b6b;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
-      background: #0f1115;
-      color: #f5f7fa;
+      font-family: Inter, Arial, sans-serif;
+      background: linear-gradient(180deg, #0a0e13 0%, #0f141b 100%);
+      color: var(--text);
     }
 
     .wrap {
-      max-width: 1380px;
-      margin: 24px auto;
+      max-width: 1420px;
+      margin: 24px auto 40px;
       padding: 0 16px;
     }
 
     h1 {
-      margin-bottom: 18px;
+      margin: 0 0 18px;
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
     }
 
     .cards {
@@ -31,29 +52,39 @@
     }
 
     .card {
-      background: #171a21;
-      border: 1px solid #2a2f3a;
-      border-radius: 12px;
-      padding: 14px;
+      background: linear-gradient(180deg, rgba(25,32,44,0.96) 0%, rgba(18,24,33,0.96) 100%);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 16px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.22);
     }
 
     .label {
       font-size: 12px;
-      color: #9aa4b2;
+      color: var(--muted);
       margin-bottom: 8px;
     }
 
     .value {
-      font-size: 24px;
-      font-weight: 700;
+      font-size: 22px;
+      font-weight: 800;
+      line-height: 1.2;
+      word-break: break-word;
     }
 
     .panel {
-      background: #171a21;
-      border: 1px solid #2a2f3a;
-      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(21,29,40,0.98) 0%, rgba(17,24,33,0.98) 100%);
+      border: 1px solid var(--border);
+      border-radius: 14px;
       padding: 16px;
       margin-bottom: 16px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.22);
+    }
+
+    .panel h3 {
+      margin: 0 0 12px;
+      font-size: 16px;
+      font-weight: 800;
     }
 
     .grid {
@@ -63,6 +94,12 @@
       align-items: start;
     }
 
+    .table-wrap {
+      max-height: 560px;
+      overflow: auto;
+      border-radius: 10px;
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
@@ -70,56 +107,57 @@
     }
 
     th, td {
-      padding: 8px 10px;
-      border-bottom: 1px solid #2a2f3a;
+      padding: 9px 10px;
+      border-bottom: 1px solid rgba(38,48,65,0.7);
       text-align: left;
       vertical-align: top;
+      white-space: nowrap;
     }
 
     th {
-      color: #9aa4b2;
-      font-weight: 600;
+      color: var(--muted);
+      font-weight: 700;
       position: sticky;
       top: 0;
-      background: #171a21;
+      background: #131a24;
+      z-index: 2;
+    }
+
+    tbody tr:hover {
+      background: rgba(255,255,255,0.03);
     }
 
     .ours {
-      color: #53d769;
-      font-weight: 600;
-    }
-
-    .ext {
-      color: #8ea2ff;
-      font-weight: 600;
-    }
-
-    .inrange {
-      color: #53d769;
+      color: var(--green);
       font-weight: 700;
     }
 
-    .outrange {
-      color: #9aa4b2;
+    .ext {
+      color: #9dacff;
+      font-weight: 700;
     }
 
-    .table-wrap {
-      max-height: 520px;
-      overflow: auto;
+    .inrange {
+      color: var(--green);
+      font-weight: 800;
+    }
+
+    .outrange {
+      color: var(--muted);
+      font-weight: 700;
     }
 
     canvas {
       width: 100% !important;
-      height: 420px !important;
+      height: 430px !important;
     }
 
-    .subtle {
-      color: #9aa4b2;
-      font-size: 12px;
-      margin-top: 6px;
+    .mini-table td,
+    .mini-table th {
+      white-space: normal;
     }
 
-    @media (max-width: 1100px) {
+    @media (max-width: 1120px) {
       .cards {
         grid-template-columns: repeat(2, 1fr);
       }
@@ -128,9 +166,12 @@
       }
     }
 
-    @media (max-width: 700px) {
+    @media (max-width: 720px) {
       .cards {
         grid-template-columns: 1fr;
+      }
+      .value {
+        font-size: 20px;
       }
     }
   </style>
@@ -161,7 +202,6 @@
     <div class="panel">
       <h3>Liquidity Distribution</h3>
       <canvas id="liqChart"></canvas>
-      <div class="subtle">Green = our liquidity, purple = external liquidity, red line = current price.</div>
     </div>
 
     <div class="grid">
@@ -172,7 +212,7 @@
 
       <div class="panel">
         <h3>Current Snapshot</h3>
-        <table>
+        <table class="mini-table">
           <tbody>
             <tr><th>Our USDC</th><td id="ourUsdc">-</td></tr>
             <tr><th>Our LMTS</th><td id="ourLmts">-</td></tr>
@@ -250,26 +290,6 @@
       return r.json();
     }
 
-    function buildCurrentPriceMarkerDataset(bucketRows, currentPrice) {
-      const labels = bucketRows.map(r => num(r.price_lower_usd_per_lmts || r.lower_usd));
-      const maxY = Math.max(
-        ...bucketRows.map(r => num(r.our_liquidity) + num(r.ext_liquidity)),
-        1
-      );
-
-      return {
-        type: "line",
-        label: "Current price",
-        data: labels.map(label => (Math.abs(label - currentPrice) < 0.005 ? maxY : null)),
-        borderColor: "#ff5c5c",
-        backgroundColor: "#ff5c5c",
-        pointRadius: 0,
-        borderWidth: 2,
-        spanGaps: false,
-        tension: 0
-      };
-    }
-
     async function main() {
       const [buckets, snapshots, positions] = await Promise.all([
         loadJson(urls.buckets),
@@ -297,33 +317,35 @@
       document.getElementById("extLmts").textContent = fmtShort(num(latest.ext_cur_lmts));
       document.getElementById("owners").textContent = String(num(latest.unique_real_owners));
 
-      const bucketLabels = buckets.map(r => num(r.price_lower_usd_per_lmts || r.lower_usd));
+      const bucketLabels = buckets.map(r => num(r.price_lower_usd_per_lmts));
       const ourLiq = buckets.map(r => num(r.our_liquidity));
       const extLiq = buckets.map(r => num(r.ext_liquidity));
 
       new Chart(document.getElementById("liqChart"), {
+        type: "bar",
         data: {
           labels: bucketLabels,
           datasets: [
             {
-              type: "bar",
               label: "Our liquidity",
               data: ourLiq,
-              backgroundColor: "#53d769",
-              stack: "liq",
+              backgroundColor: "rgba(124, 255, 77, 0.95)",
+              borderColor: "rgba(124, 255, 77, 1)",
+              borderWidth: 1,
               barPercentage: 1.0,
-              categoryPercentage: 1.0
+              categoryPercentage: 1.0,
+              borderRadius: 0
             },
             {
-              type: "bar",
               label: "External liquidity",
               data: extLiq,
-              backgroundColor: "#6d7cff",
-              stack: "liq",
+              backgroundColor: "rgba(125, 138, 255, 0.28)",
+              borderColor: "rgba(125, 138, 255, 0.55)",
+              borderWidth: 1,
               barPercentage: 1.0,
-              categoryPercentage: 1.0
-            },
-            buildCurrentPriceMarkerDataset(buckets, currentPrice)
+              categoryPercentage: 1.0,
+              borderRadius: 0
+            }
           ]
         },
         options: {
@@ -335,19 +357,25 @@
           },
           scales: {
             x: {
-              stacked: true,
+              grid: {
+                color: "rgba(255,255,255,0.04)",
+                drawBorder: false
+              },
               ticks: {
                 color: "#c7d0d9",
                 maxRotation: 45,
                 minRotation: 45,
                 callback: function(value) {
-                  const v = this.getLabelForValue(value);
-                  return Number(v).toFixed(2);
+                  const v = Number(this.getLabelForValue(value));
+                  return v.toFixed(2);
                 }
               }
             },
             y: {
-              stacked: true,
+              grid: {
+                color: "rgba(255,255,255,0.06)",
+                drawBorder: false
+              },
               ticks: {
                 color: "#c7d0d9",
                 callback: function(value) {
@@ -358,14 +386,26 @@
           },
           plugins: {
             legend: {
-              labels: { color: "#f5f7fa" }
+              labels: {
+                color: "#f5f7fa",
+                boxWidth: 20,
+                boxHeight: 10,
+                usePointStyle: false
+              }
             },
             tooltip: {
+              backgroundColor: "rgba(14,18,25,0.96)",
+              borderColor: "rgba(255,255,255,0.08)",
+              borderWidth: 1,
+              titleColor: "#ffffff",
+              bodyColor: "#dfe7f1",
+              padding: 12,
               callbacks: {
+                title: function(items) {
+                  const raw = Number(items[0].label);
+                  return `Price from ${raw.toFixed(2)}`;
+                },
                 label: function(context) {
-                  if (context.dataset.label === "Current price") {
-                    return `Current price: ${fmtPrice(currentPrice)}`;
-                  }
                   return `${context.dataset.label}: ${fmtShort(num(context.raw))}`;
                 }
               }
@@ -386,20 +426,37 @@
               label: "Price USD per LMTS",
               data: prices,
               borderColor: "#8ea2ff",
-              backgroundColor: "#8ea2ff",
-              tension: 0.2,
-              pointRadius: 3
+              backgroundColor: "rgba(142,162,255,0.18)",
+              tension: 0.22,
+              pointRadius: 3,
+              pointHoverRadius: 4,
+              fill: false
             }
           ]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
+          interaction: {
+            mode: "index",
+            intersect: false
+          },
           scales: {
             x: {
-              ticks: { color: "#c7d0d9" }
+              grid: {
+                color: "rgba(255,255,255,0.04)",
+                drawBorder: false
+              },
+              ticks: {
+                color: "#c7d0d9",
+                maxTicksLimit: 6
+              }
             },
             y: {
+              grid: {
+                color: "rgba(255,255,255,0.06)",
+                drawBorder: false
+              },
               ticks: {
                 color: "#c7d0d9",
                 callback: function(value) {
@@ -413,6 +470,12 @@
               labels: { color: "#f5f7fa" }
             },
             tooltip: {
+              backgroundColor: "rgba(14,18,25,0.96)",
+              borderColor: "rgba(255,255,255,0.08)",
+              borderWidth: 1,
+              titleColor: "#ffffff",
+              bodyColor: "#dfe7f1",
+              padding: 12,
               callbacks: {
                 label: function(context) {
                   return `Price: ${fmtPrice(num(context.raw))}`;
@@ -439,15 +502,16 @@
         .sort((a, b) => b.currentValueUsd - a.currentValueUsd)
         .forEach(p => {
           const tr = document.createElement("tr");
-          const range = `${Number(p.price_lower_usd_per_lmts).toFixed(4)} – ${Number(p.price_upper_usd_per_lmts).toFixed(4)}`;
+          const low = Number(p.price_lower_usd_per_lmts);
+          const high = Number(p.price_upper_usd_per_lmts);
+          const range = `${low.toFixed(4)} – ${high.toFixed(4)}`;
+          const isInRange = String(p.in_range).toUpperCase() === "TRUE";
 
           tr.innerHTML = `
             <td>${p.token_id || "-"}</td>
             <td class="${p.type === "ours" ? "ours" : "ext"}">${p.label || p.type || "-"}</td>
             <td>${range}</td>
-            <td class="${String(p.in_range).toUpperCase() === "TRUE" ? "inrange" : "outrange"}">
-              ${String(p.in_range).toUpperCase() === "TRUE" ? "YES" : "NO"}
-            </td>
+            <td class="${isInRange ? "inrange" : "outrange"}">${isInRange ? "YES" : "NO"}</td>
             <td>${fmtUsd(num(p.cur_usdc))}</td>
             <td>${fmtShort(num(p.cur_lmts))}</td>
             <td>${fmtUsd(p.currentValueUsd)}</td>
