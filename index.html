@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LMTS UniV3 Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #0f1115;
+      color: #f5f7fa;
+    }
+    .wrap {
+      max-width: 1280px;
+      margin: 24px auto;
+      padding: 0 16px;
+    }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .card {
+      background: #171a21;
+      border: 1px solid #2a2f3a;
+      border-radius: 12px;
+      padding: 14px;
+    }
+    .label {
+      font-size: 12px;
+      color: #9aa4b2;
+      margin-bottom: 8px;
+    }
+    .value {
+      font-size: 24px;
+      font-weight: 700;
+    }
+    .panel {
+      background: #171a21;
+      border: 1px solid #2a2f3a;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 16px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    th, td {
+      padding: 8px 10px;
+      border-bottom: 1px solid #2a2f3a;
+      text-align: left;
+    }
+    th {
+      color: #9aa4b2;
+      font-weight: 600;
+    }
+    .ours {
+      color: #53d769;
+      font-weight: 600;
+    }
+    .ext {
+      color: #8ea2ff;
+      font-weight: 600;
+    }
+    canvas {
+      width: 100% !important;
+      height: 420px !important;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>LMTS / USDC UniV3 Dashboard</h1>
+
+    <div class="cards">
+      <div class="card">
+        <div class="label">Current Price</div>
+        <div class="value" id="price">-</div>
+      </div>
+      <div class="card">
+        <div class="label">Open Positions</div>
+        <div class="value" id="openPositions">-</div>
+      </div>
+      <div class="card">
+        <div class="label">Our Liquidity</div>
+        <div class="value" id="ourLiquidity">-</div>
+      </div>
+      <div class="card">
+        <div class="label">Unique Owners</div>
+        <div class="value" id="owners">-</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Liquidity Distribution</h3>
+      <canvas id="liqChart"></canvas>
+    </div>
+
+    <div class="grid">
+      <div class="panel">
+        <h3>Price History</h3>
+        <canvas id="priceChart"></canvas>
+      </div>
+
+      <div class="panel">
+        <h3>Current Positions</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Label</th>
+              <th>Range</th>
+              <th>Liquidity</th>
+              <th>In range</th>
+            </tr>
+          </thead>
+          <tbody id="positionsBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SHEET_ID = "1oJf881yq6bhUSlLBvuiG8n_hj2pWvPO-7lvis0eKXVs";
+
+    const urls = {
+      buckets: `https://opensheet.elk.sh/${SHEET_ID}/buckets`,
+      snapshots: `https://opensheet.elk.sh/${SHEET_ID}/snapshots`,
+      positions: `https://opensheet.elk.sh/${SHEET_ID}/positions`
+    };
+
+    function num(v) {
+      const x = Number(v);
+      return Number.isFinite(x) ? x : 0;
+    }
+
+    function fmtShort(v) {
+      if (Math.abs(v) >= 1e12) return (v / 1e12).toFixed(2) + "T";
+      if (Math.abs(v) >= 1e9) return (v / 1e9).toFixed(2) + "B";
+      if (Math.abs(v) >= 1e6) return (v / 1e6).toFixed(2) + "M";
+      if (Math.abs(v) >= 1e3) return (v / 1e3).toFixed(2) + "K";
+      return v.toFixed(2);
+    }
+
+    async function loadJson(url) {
+      const r = await fetch(url);
+      if (!r.ok) throw new Error(`Fetch failed: ${url}`);
+      return r.json();
+    }
+
+    async function main() {
+      const [buckets, snapshots, positions] = await Promise.all([
+        loadJson(urls.buckets),
+        loadJson(urls.snapshots),
+        loadJson(urls.positions)
+      ]);
+
+      const latest = snapshots[snapshots.length - 1] || {};
+
+      document.getElementById("price").textContent = "$" + fmtShort(num(latest.price_usd_per_lmts));
+      document.getElementById("openPositions").textContent = String(num(latest.open_positions));
+      document.getElementById("ourLiquidity").textContent = fmtShort(num(latest.our_liquidity));
+      document.getElementById("owners").textContent = String(num(latest.unique_real_owners));
+
+      const bucketLabels = buckets.map(r => num(r.lower_usd || r.price_lower_usd_per_lmts));
+      const ourLiq = buckets.map(r => num(r.our_liquidity));
+      const extLiq = buckets.map(r => num(r.ext_liquidity));
+
+      new Chart(document.getElementById("liqChart"), {
+        type: "bar",
+        data: {
+          labels: bucketLabels,
+          datasets: [
+            {
+              label: "Our liquidity",
+              data: ourLiq,
+              backgroundColor: "#53d769",
+              stack: "liq"
+            },
+            {
+              label: "External liquidity",
+              data: extLiq,
+              backgroundColor: "#6d7cff",
+              stack: "liq"
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: { stacked: true, ticks: { color: "#c7d0d9" } },
+            y: { stacked: true, ticks: { color: "#c7d0d9" } }
+          },
+          plugins: {
+            legend: { labels: { color: "#f5f7fa" } }
+          }
+        }
+      });
+
+      const timeLabels = snapshots.map(r => r.timestamp_utc);
+      const prices = snapshots.map(r => num(r.price_usd_per_lmts));
+
+      new Chart(document.getElementById("priceChart"), {
+        type: "line",
+        data: {
+          labels: timeLabels,
+          datasets: [
+            {
+              label: "Price USD per LMTS",
+              data: prices,
+              borderColor: "#8ea2ff",
+              backgroundColor: "#8ea2ff",
+              tension: 0.2
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: { ticks: { color: "#c7d0d9" } },
+            y: { ticks: { color: "#c7d0d9" } }
+          },
+          plugins: {
+            legend: { labels: { color: "#f5f7fa" } }
+          }
+        }
+      });
+
+      const body = document.getElementById("positionsBody");
+      positions
+        .sort((a, b) => num(b.liquidity) - num(a.liquidity))
+        .forEach(p => {
+          const tr = document.createElement("tr");
+          const range = `${p.price_lower_usd_per_lmts} – ${p.price_upper_usd_per_lmts}`;
+          tr.innerHTML = `
+            <td class="${p.type === "ours" ? "ours" : "ext"}">${p.label || p.type}</td>
+            <td>${range}</td>
+            <td>${fmtShort(num(p.liquidity))}</td>
+            <td>${String(p.in_range)}</td>
+          `;
+          body.appendChild(tr);
+        });
+    }
+
+    main().catch(err => {
+      document.body.insertAdjacentHTML("beforeend", `<pre>${err.message}</pre>`);
+      console.error(err);
+    });
+  </script>
+</body>
+</html>
