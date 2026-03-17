@@ -3,47 +3,157 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LMTS / USDC UniV3 Dashboard</title>
+  <title>LMTS LP Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root {
-      --bg: #0b0f14;
-      --panel: #121821;
-      --panel-2: #171f2b;
-      --border: #263041;
-      --text: #eef3f8;
-      --muted: #95a2b3;
-      --green: #7CFF4D;
-      --green-soft: rgba(124, 255, 77, 0.18);
-      --purple: rgba(125, 138, 255, 0.35);
-      --purple-line: #7d8aff;
-      --danger: #ff6b6b;
+      --bg: #07090d;
+      --panel: #0d1117;
+      --border: #1c2433;
+      --border-bright: #2a3a52;
+      --text: #e8eef5;
+      --muted: #7a8a9e;
+      --green: #39ff9a;
+      --green-dim: rgba(57,255,154,0.12);
+      --blue: #4da6ff;
+      --blue-dim: rgba(77,166,255,0.12);
+      --orange: #ff9944;
+      --danger: #ff5566;
+
+      --uni-accent: #9b7cff;
+      --uni-accent-dim: rgba(155,124,255,0.15);
+      --uni-bar-our: rgba(124,255,77,0.92);
+      --uni-bar-ext: rgba(125,138,255,0.3);
+
+      --aero-accent: #00d4aa;
+      --aero-accent-dim: rgba(0,212,170,0.15);
+      --aero-bar-our: rgba(0,212,170,0.9);
+      --aero-bar-ext: rgba(77,166,255,0.3);
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      margin: 0;
-      font-family: Inter, Arial, sans-serif;
-      background: linear-gradient(180deg, #0a0e13 0%, #0f141b 100%);
+      font-family: 'Space Mono', monospace;
+      background: var(--bg);
       color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* noise texture overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.6;
     }
 
     .wrap {
-      max-width: 1420px;
-      margin: 24px auto 40px;
-      padding: 0 16px;
+      position: relative;
+      z-index: 1;
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 28px 20px 60px;
     }
 
-    h1 {
-      margin: 0 0 18px;
-      font-size: 24px;
+    /* ── HEADER ── */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .header-left h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: 28px;
       font-weight: 800;
-      letter-spacing: -0.02em;
+      letter-spacing: -0.03em;
+      line-height: 1;
     }
 
+    .header-left h1 span.accent {
+      color: var(--pool-accent);
+    }
+
+    .header-left .subtitle {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 6px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    /* ── POOL SWITCHER ── */
+    .switcher {
+      display: flex;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      padding: 4px;
+      gap: 4px;
+    }
+
+    .switcher button {
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 8px 18px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: transparent;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+    }
+
+    .switcher button.active {
+      background: var(--pool-accent-dim);
+      color: var(--pool-accent);
+      box-shadow: 0 0 16px var(--pool-accent-glow);
+    }
+
+    .switcher button:hover:not(.active) {
+      color: var(--text);
+      background: rgba(255,255,255,0.04);
+    }
+
+    /* ── STATUS BAR ── */
+    .status-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 20px;
+      letter-spacing: 0.05em;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 8px var(--green);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    /* ── CARDS ── */
     .cards {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -52,478 +162,722 @@
     }
 
     .card {
-      background: linear-gradient(180deg, rgba(25,32,44,0.96) 0%, rgba(18,24,33,0.96) 100%);
+      background: var(--panel);
       border: 1px solid var(--border);
       border-radius: 14px;
-      padding: 14px 16px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.22);
+      padding: 16px 18px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.3s;
     }
 
-    .label {
-      font-size: 12px;
+    .card::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--pool-accent), transparent);
+      opacity: 0.6;
+    }
+
+    .card:hover {
+      border-color: var(--border-bright);
+    }
+
+    .card .label {
+      font-size: 10px;
       color: var(--muted);
-      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 10px;
     }
 
-    .value {
-      font-size: 22px;
+    .card .value {
+      font-family: 'Syne', sans-serif;
+      font-size: 26px;
       font-weight: 800;
-      line-height: 1.2;
-      word-break: break-word;
+      line-height: 1.1;
+      color: var(--text);
     }
 
+    .card .value.accent {
+      color: var(--pool-accent);
+    }
+
+    /* ── PANELS ── */
     .panel {
-      background: linear-gradient(180deg, rgba(21,29,40,0.98) 0%, rgba(17,24,33,0.98) 100%);
+      background: var(--panel);
       border: 1px solid var(--border);
       border-radius: 14px;
-      padding: 16px;
+      padding: 18px 20px;
       margin-bottom: 16px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.22);
+      position: relative;
     }
 
     .panel h3 {
-      margin: 0 0 12px;
-      font-size: 16px;
+      font-family: 'Syne', sans-serif;
+      font-size: 14px;
       font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+
+    .panel h3 span {
+      color: var(--pool-accent);
     }
 
     .grid {
       display: grid;
-      grid-template-columns: 1.5fr 1fr;
+      grid-template-columns: 1.6fr 1fr;
       gap: 16px;
       align-items: start;
     }
 
+    /* ── CHART ── */
+    .chart-wrap {
+      position: relative;
+      height: 380px;
+    }
+
+    .chart-wrap canvas {
+      width: 100% !important;
+      height: 100% !important;
+    }
+
+    /* ── MINI TABLE ── */
+    .mini-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    .mini-table tr {
+      border-bottom: 1px solid var(--border);
+    }
+
+    .mini-table tr:last-child {
+      border-bottom: none;
+    }
+
+    .mini-table th {
+      color: var(--muted);
+      font-weight: 400;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      padding: 10px 0;
+      text-align: left;
+      width: 50%;
+    }
+
+    .mini-table td {
+      padding: 10px 0;
+      text-align: right;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .mini-table td.green { color: var(--green); }
+    .mini-table td.blue  { color: var(--blue); }
+    .mini-table td.accent { color: var(--pool-accent); }
+
+    /* ── POSITIONS TABLE ── */
     .table-wrap {
-      max-height: 560px;
+      max-height: 520px;
       overflow: auto;
       border-radius: 10px;
     }
 
-    table {
+    .table-wrap::-webkit-scrollbar { width: 4px; height: 4px; }
+    .table-wrap::-webkit-scrollbar-track { background: transparent; }
+    .table-wrap::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 4px; }
+
+    table.pos-table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 13px;
+      font-size: 12px;
     }
 
-    th, td {
-      padding: 9px 10px;
-      border-bottom: 1px solid rgba(38,48,65,0.7);
+    table.pos-table th,
+    table.pos-table td {
+      padding: 9px 12px;
+      border-bottom: 1px solid rgba(28,36,51,0.7);
       text-align: left;
-      vertical-align: top;
       white-space: nowrap;
     }
 
-    th {
+    table.pos-table th {
       color: var(--muted);
       font-weight: 700;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
       position: sticky;
       top: 0;
-      background: #131a24;
+      background: #0d1117;
       z-index: 2;
     }
 
-    tbody tr:hover {
-      background: rgba(255,255,255,0.03);
+    table.pos-table tbody tr:hover {
+      background: rgba(255,255,255,0.025);
     }
 
-    .ours {
+    .tag-ours {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: var(--green-dim);
       color: var(--green);
       font-weight: 700;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
     }
 
-    .ext {
-      color: #9dacff;
+    .tag-ext {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: var(--blue-dim);
+      color: var(--blue);
       font-weight: 700;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
     }
 
     .inrange {
       color: var(--green);
-      font-weight: 800;
+      font-weight: 700;
     }
 
     .outrange {
       color: var(--muted);
-      font-weight: 700;
     }
 
-    canvas {
-      width: 100% !important;
-      height: 430px !important;
+    /* ── LOADING ── */
+    .loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 300px;
+      gap: 16px;
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
     }
 
-    .mini-table td,
-    .mini-table th {
-      white-space: normal;
+    .spinner {
+      width: 32px;
+      height: 32px;
+      border: 2px solid var(--border);
+      border-top-color: var(--pool-accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
     }
 
-    @media (max-width: 1120px) {
-      .cards {
-        grid-template-columns: repeat(2, 1fr);
-      }
-      .grid {
-        grid-template-columns: 1fr;
-      }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .error-msg {
+      color: var(--danger);
+      font-size: 12px;
+      padding: 16px;
+      background: rgba(255,85,102,0.08);
+      border: 1px solid rgba(255,85,102,0.2);
+      border-radius: 8px;
+      margin-top: 16px;
     }
 
-    @media (max-width: 720px) {
-      .cards {
-        grid-template-columns: 1fr;
-      }
-      .value {
-        font-size: 20px;
-      }
+    /* ── POOL BADGE ── */
+    .pool-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--pool-accent);
+      color: var(--pool-accent);
+      background: var(--pool-accent-dim);
+      margin-left: 12px;
+      vertical-align: middle;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 1100px) {
+      .cards { grid-template-columns: repeat(2, 1fr); }
+      .grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 640px) {
+      .cards { grid-template-columns: 1fr; }
+      .header { flex-direction: column; align-items: flex-start; }
+      .card .value { font-size: 22px; }
     }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <h1>LMTS / USDC UniV3 Dashboard</h1>
+<div class="wrap">
 
-    <div class="cards">
-      <div class="card">
-        <div class="label">Current Price</div>
-        <div class="value" id="price">-</div>
-      </div>
-      <div class="card">
-        <div class="label">Open Positions</div>
-        <div class="value" id="openPositions">-</div>
-      </div>
-      <div class="card">
-        <div class="label">Our Value (USD)</div>
-        <div class="value" id="ourValueUsd">-</div>
-      </div>
-      <div class="card">
-        <div class="label">External Value (USD)</div>
-        <div class="value" id="extValueUsd">-</div>
-      </div>
+  <div class="header">
+    <div class="header-left">
+      <h1>LMTS / USDC <span class="accent" id="headerPoolName">UniV3</span> <span class="pool-badge" id="headerBadge">●&nbsp;LIVE</span></h1>
+      <div class="subtitle" id="headerSubtitle">Uniswap V3 · Base Network · LP Position Tracker</div>
     </div>
-
-    <div class="panel">
-      <h3>Liquidity Distribution</h3>
-      <canvas id="liqChart"></canvas>
-    </div>
-
-    <div class="grid">
-      <div class="panel">
-        <h3>Price History</h3>
-        <canvas id="priceChart"></canvas>
-      </div>
-
-      <div class="panel">
-        <h3>Current Snapshot</h3>
-        <table class="mini-table">
-          <tbody>
-            <tr><th>Our USDC</th><td id="ourUsdc">-</td></tr>
-            <tr><th>Our LMTS</th><td id="ourLmts">-</td></tr>
-            <tr><th>External USDC</th><td id="extUsdc">-</td></tr>
-            <tr><th>External LMTS</th><td id="extLmts">-</td></tr>
-            <tr><th>Unique Owners</th><td id="owners">-</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="panel">
-      <h3>Current Positions</h3>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Token ID</th>
-              <th>Label</th>
-              <th>Range</th>
-              <th>In Range</th>
-              <th>Cur USDC</th>
-              <th>Cur LMTS</th>
-              <th>Current Value USD</th>
-            </tr>
-          </thead>
-          <tbody id="positionsBody"></tbody>
-        </table>
-      </div>
+    <div class="switcher">
+      <button id="btnUni" class="active" onclick="switchPool('uni')">⬡ UniV3</button>
+      <button id="btnAero" onclick="switchPool('aero')">◈ Aerodrome</button>
     </div>
   </div>
 
-  <script>
-    const SHEET_ID = "1oJf881yq6bhUSlLBvuiG8n_hj2pWvPO-7lvis0eKXVs";
+  <div class="status-bar">
+    <div class="status-dot"></div>
+    <span id="lastUpdate">Loading...</span>
+  </div>
 
-    const urls = {
-      buckets: `https://opensheet.elk.sh/${SHEET_ID}/buckets`,
-      snapshots: `https://opensheet.elk.sh/${SHEET_ID}/snapshots`,
-      positions: `https://opensheet.elk.sh/${SHEET_ID}/positions`
-    };
+  <div id="dashContent">
+    <div class="loading">
+      <div class="spinner"></div>
+      <span>Fetching data...</span>
+    </div>
+  </div>
 
-    function num(v) {
-      const x = Number(v);
-      return Number.isFinite(x) ? x : 0;
-    }
+</div>
 
-    function fmtShort(v) {
-      if (!Number.isFinite(v)) return "-";
-      if (Math.abs(v) >= 1e12) return (v / 1e12).toFixed(2) + "T";
-      if (Math.abs(v) >= 1e9) return (v / 1e9).toFixed(2) + "B";
-      if (Math.abs(v) >= 1e6) return (v / 1e6).toFixed(2) + "M";
-      if (Math.abs(v) >= 1e3) return (v / 1e3).toFixed(2) + "K";
-      return v.toLocaleString(undefined, { maximumFractionDigits: 2 });
-    }
+<script>
+// ── CONFIG ──────────────────────────────────────────────
+const POOLS = {
+  uni: {
+    sheetId: "1oJf881yq6bhUSlLBvuiG8n_hj2pWvPO-7lvis0eKXVs",
+    name: "UniV3",
+    subtitle: "Uniswap V3 · Base Network · LP Position Tracker",
+    accent: "#9b7cff",
+    accentDim: "rgba(155,124,255,0.15)",
+    accentGlow: "rgba(155,124,255,0.25)",
+    barOur: "rgba(124,255,77,0.92)",
+    barExt: "rgba(125,138,255,0.3)",
+    barOurBorder: "rgba(124,255,77,1)",
+    barExtBorder: "rgba(125,138,255,0.6)",
+    priceColor: "#9b7cff",
+    priceFill: "rgba(155,124,255,0.12)",
+    sheets: { buckets: "buckets", snapshots: "snapshots", positions: "positions" },
+    bucketIsPrice: true,  // buckets use price_lower_usd_per_lmts
+  },
+  aero: {
+    sheetId: "14zlvfkLX8Hs3_duak9ID0BGsLfyIVJ_UZ9MOP9lY-oE",
+    name: "Aerodrome",
+    subtitle: "Aerodrome Slipstream · Base Network · LP Position Tracker",
+    accent: "#00d4aa",
+    accentDim: "rgba(0,212,170,0.15)",
+    accentGlow: "rgba(0,212,170,0.25)",
+    barOur: "rgba(0,212,170,0.9)",
+    barExt: "rgba(77,166,255,0.3)",
+    barOurBorder: "rgba(0,212,170,1)",
+    barExtBorder: "rgba(77,166,255,0.6)",
+    priceColor: "#00d4aa",
+    priceFill: "rgba(0,212,170,0.1)",
+    sheets: { buckets: "aero_buckets", snapshots: "aero_snapshots", positions: "aero_positions" },
+    bucketIsPrice: false, // buckets use tick_lower
+  }
+};
 
-    function fmtUsd(v) {
-      if (!Number.isFinite(v)) return "-";
-      return "$" + v.toLocaleString(undefined, {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      });
-    }
+let currentPool = "uni";
+let chartInstances = {};
 
-    function fmtPrice(v) {
-      if (!Number.isFinite(v)) return "-";
-      return "$" + v.toLocaleString(undefined, {
-        minimumFractionDigits: 4,
-        maximumFractionDigits: 6
-      });
-    }
+// ── CSS VAR HELPERS ──────────────────────────────────────
+function applyPoolTheme(cfg) {
+  const root = document.documentElement;
+  root.style.setProperty("--pool-accent", cfg.accent);
+  root.style.setProperty("--pool-accent-dim", cfg.accentDim);
+  root.style.setProperty("--pool-accent-glow", cfg.accentGlow);
+}
 
-    async function loadJson(url) {
-      const r = await fetch(url);
-      if (!r.ok) throw new Error(`Fetch failed: ${url}`);
-      return r.json();
-    }
+// ── UTILS ────────────────────────────────────────────────
+function num(v) {
+  const x = Number(v);
+  return Number.isFinite(x) ? x : 0;
+}
 
-    async function main() {
-      const [buckets, snapshots, positions] = await Promise.all([
-        loadJson(urls.buckets),
-        loadJson(urls.snapshots),
-        loadJson(urls.positions)
-      ]);
+function fmtShort(v) {
+  if (!Number.isFinite(v)) return "-";
+  if (Math.abs(v) >= 1e12) return (v/1e12).toFixed(2)+"T";
+  if (Math.abs(v) >= 1e9)  return (v/1e9).toFixed(2)+"B";
+  if (Math.abs(v) >= 1e6)  return (v/1e6).toFixed(2)+"M";
+  if (Math.abs(v) >= 1e3)  return (v/1e3).toFixed(2)+"K";
+  return v.toLocaleString(undefined, { maximumFractionDigits: 2 });
+}
 
-      const latest = snapshots[snapshots.length - 1] || {};
-      const currentPrice = num(latest.price_usd_per_lmts);
+function fmtUsd(v) {
+  if (!Number.isFinite(v)) return "-";
+  return "$" + v.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
 
-      const ourValueUsd =
-        num(latest.our_cur_usdc) + num(latest.our_cur_lmts) * currentPrice;
+function fmtPrice(v) {
+  if (!Number.isFinite(v)) return "-";
+  return "$" + v.toLocaleString(undefined, { minimumFractionDigits: 4, maximumFractionDigits: 6 });
+}
 
-      const extValueUsd =
-        num(latest.ext_cur_usdc) + num(latest.ext_cur_lmts) * currentPrice;
+async function loadJson(url) {
+  const r = await fetch(url);
+  if (!r.ok) throw new Error(`Fetch failed: ${url}`);
+  return r.json();
+}
 
-      document.getElementById("price").textContent = fmtPrice(currentPrice);
-      document.getElementById("openPositions").textContent = String(num(latest.open_positions));
-      document.getElementById("ourValueUsd").textContent = fmtUsd(ourValueUsd);
-      document.getElementById("extValueUsd").textContent = fmtUsd(extValueUsd);
+function sheetUrl(sheetId, tab) {
+  return `https://opensheet.elk.sh/${sheetId}/${tab}`;
+}
 
-      document.getElementById("ourUsdc").textContent = fmtUsd(num(latest.our_cur_usdc));
-      document.getElementById("ourLmts").textContent = fmtShort(num(latest.our_cur_lmts));
-      document.getElementById("extUsdc").textContent = fmtUsd(num(latest.ext_cur_usdc));
-      document.getElementById("extLmts").textContent = fmtShort(num(latest.ext_cur_lmts));
-      document.getElementById("owners").textContent = String(num(latest.unique_real_owners));
+// ── CHART CLEANUP ────────────────────────────────────────
+function destroyCharts() {
+  Object.values(chartInstances).forEach(c => { try { c.destroy(); } catch(e){} });
+  chartInstances = {};
+}
 
-      const bucketLabels = buckets.map(r => num(r.price_lower_usd_per_lmts));
-      const ourLiq = buckets.map(r => num(r.our_liquidity));
-      const extLiq = buckets.map(r => num(r.ext_liquidity));
+// ── SWITCH POOL ──────────────────────────────────────────
+function switchPool(pool) {
+  if (pool === currentPool) return;
+  currentPool = pool;
+  const cfg = POOLS[pool];
 
-      new Chart(document.getElementById("liqChart"), {
-        type: "bar",
-        data: {
-          labels: bucketLabels,
-          datasets: [
-            {
-              label: "Our liquidity",
-              data: ourLiq,
-              backgroundColor: "rgba(124, 255, 77, 0.95)",
-              borderColor: "rgba(124, 255, 77, 1)",
-              borderWidth: 1,
-              barPercentage: 1.0,
-              categoryPercentage: 1.0,
-              borderRadius: 0
-            },
-            {
-              label: "External liquidity",
-              data: extLiq,
-              backgroundColor: "rgba(125, 138, 255, 0.28)",
-              borderColor: "rgba(125, 138, 255, 0.55)",
-              borderWidth: 1,
-              barPercentage: 1.0,
-              categoryPercentage: 1.0,
-              borderRadius: 0
-            }
-          ]
+  applyPoolTheme(cfg);
+
+  document.getElementById("btnUni").classList.toggle("active", pool === "uni");
+  document.getElementById("btnAero").classList.toggle("active", pool === "aero");
+  document.getElementById("headerPoolName").textContent = cfg.name;
+  document.getElementById("headerSubtitle").textContent = cfg.subtitle;
+
+  destroyCharts();
+  renderDash(cfg);
+}
+
+// ── RENDER ───────────────────────────────────────────────
+async function renderDash(cfg) {
+  const content = document.getElementById("dashContent");
+  content.innerHTML = `<div class="loading"><div class="spinner"></div><span>Fetching ${cfg.name} data...</span></div>`;
+
+  try {
+    const [buckets, snapshots, positions] = await Promise.all([
+      loadJson(sheetUrl(cfg.sheetId, cfg.sheets.buckets)),
+      loadJson(sheetUrl(cfg.sheetId, cfg.sheets.snapshots)),
+      loadJson(sheetUrl(cfg.sheetId, cfg.sheets.positions)),
+    ]);
+
+    const latest = snapshots[snapshots.length - 1] || {};
+    const currentPrice = num(latest.price_usd_per_lmts);
+    const ourValueUsd = num(latest.our_cur_usdc) + num(latest.our_cur_lmts) * currentPrice;
+    const extValueUsd = num(latest.ext_cur_usdc) + num(latest.ext_cur_lmts) * currentPrice;
+
+    document.getElementById("lastUpdate").textContent =
+      `Last update: ${latest.timestamp_utc || "unknown"} UTC · Block ${latest.last_block || "?"}`;
+
+    content.innerHTML = buildHTML(cfg);
+
+    // cards
+    setText("price", fmtPrice(currentPrice));
+    setText("openPositions", String(num(latest.open_positions)));
+    setText("ourValueUsd", fmtUsd(ourValueUsd));
+    setText("extValueUsd", fmtUsd(extValueUsd));
+
+    // snapshot table
+    setText("ourUsdc",  fmtUsd(num(latest.our_cur_usdc)));
+    setText("ourLmts",  fmtShort(num(latest.our_cur_lmts)) + " LMTS");
+    setText("extUsdc",  fmtUsd(num(latest.ext_cur_usdc)));
+    setText("extLmts",  fmtShort(num(latest.ext_cur_lmts)) + " LMTS");
+    setText("owners",   String(num(latest.unique_real_owners)));
+    setText("inRange",  String(num(latest.in_range_positions)));
+    setText("ourPos",   String(num(latest.our_positions)));
+    setText("tick",     String(num(latest.current_tick)));
+
+    // liquidity chart
+    buildLiqChart(cfg, buckets);
+
+    // price history chart
+    buildPriceChart(cfg, snapshots);
+
+    // positions table
+    buildPositionsTable(cfg, positions, currentPrice);
+
+  } catch(err) {
+    content.innerHTML = `<div class="error-msg">⚠ ${err.message}</div>`;
+    console.error(err);
+  }
+}
+
+function setText(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+
+// ── HTML TEMPLATE ────────────────────────────────────────
+function buildHTML(cfg) {
+  return `
+  <div class="cards">
+    <div class="card">
+      <div class="label">Current Price</div>
+      <div class="value accent" id="price">-</div>
+    </div>
+    <div class="card">
+      <div class="label">Open Positions</div>
+      <div class="value" id="openPositions">-</div>
+    </div>
+    <div class="card">
+      <div class="label">Our Value (USD)</div>
+      <div class="value" id="ourValueUsd">-</div>
+    </div>
+    <div class="card">
+      <div class="label">External Value (USD)</div>
+      <div class="value" id="extValueUsd">-</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>Liquidity Distribution <span>/ ${cfg.name}</span></h3>
+    <div class="chart-wrap"><canvas id="liqChart"></canvas></div>
+  </div>
+
+  <div class="grid">
+    <div class="panel">
+      <h3>Price History <span>/ LMTS–USD</span></h3>
+      <div class="chart-wrap" style="height:320px"><canvas id="priceChart"></canvas></div>
+    </div>
+
+    <div class="panel">
+      <h3>Snapshot <span>/ Current</span></h3>
+      <table class="mini-table">
+        <tr><th>Our USDC</th><td class="green" id="ourUsdc">-</td></tr>
+        <tr><th>Our LMTS</th><td class="green" id="ourLmts">-</td></tr>
+        <tr><th>Ext USDC</th><td class="blue"  id="extUsdc">-</td></tr>
+        <tr><th>Ext LMTS</th><td class="blue"  id="extLmts">-</td></tr>
+        <tr><th>Unique Owners</th><td id="owners">-</td></tr>
+        <tr><th>In-Range Pos</th><td class="accent" id="inRange">-</td></tr>
+        <tr><th>Our Positions</th><td id="ourPos">-</td></tr>
+        <tr><th>Current Tick</th><td id="tick">-</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>Current Positions <span>/ ${cfg.name}</span></h3>
+    <div class="table-wrap">
+      <table class="pos-table">
+        <thead>
+          <tr>
+            <th>Token ID</th>
+            <th>Label</th>
+            <th>Range</th>
+            <th>In Range</th>
+            <th>Cur USDC</th>
+            <th>Cur LMTS</th>
+            <th>Value USD</th>
+          </tr>
+        </thead>
+        <tbody id="positionsBody"></tbody>
+      </table>
+    </div>
+  </div>
+  `;
+}
+
+// ── LIQUIDITY CHART ──────────────────────────────────────
+function buildLiqChart(cfg, buckets) {
+  const labels = buckets.map(r =>
+    cfg.bucketIsPrice ? num(r.price_lower_usd_per_lmts) : num(r.tick_lower)
+  );
+  const ourLiq = buckets.map(r => num(r.our_liquidity));
+  const extLiq = buckets.map(r => num(r.ext_liquidity));
+
+  const xLabel = cfg.bucketIsPrice ? "Price (USD/LMTS)" : "Tick";
+
+  chartInstances.liq = new Chart(document.getElementById("liqChart"), {
+    type: "bar",
+    data: {
+      labels,
+      datasets: [
+        {
+          label: "Our liquidity",
+          data: ourLiq,
+          backgroundColor: cfg.barOur,
+          borderColor: cfg.barOurBorder,
+          borderWidth: 1,
+          barPercentage: 1.0,
+          categoryPercentage: 1.0,
+          borderRadius: 0,
         },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          interaction: {
-            mode: "index",
-            intersect: false
-          },
-          scales: {
-            x: {
-              grid: {
-                color: "rgba(255,255,255,0.04)",
-                drawBorder: false
-              },
-              ticks: {
-                color: "#c7d0d9",
-                maxRotation: 45,
-                minRotation: 45,
-                callback: function(value) {
-                  const v = Number(this.getLabelForValue(value));
-                  return v.toFixed(2);
-                }
-              }
-            },
-            y: {
-              grid: {
-                color: "rgba(255,255,255,0.06)",
-                drawBorder: false
-              },
-              ticks: {
-                color: "#c7d0d9",
-                callback: function(value) {
-                  return fmtShort(Number(value));
-                }
-              }
+        {
+          label: "External liquidity",
+          data: extLiq,
+          backgroundColor: cfg.barExt,
+          borderColor: cfg.barExtBorder,
+          borderWidth: 1,
+          barPercentage: 1.0,
+          categoryPercentage: 1.0,
+          borderRadius: 0,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: "index", intersect: false },
+      scales: {
+        x: {
+          grid: { color: "rgba(255,255,255,0.03)" },
+          ticks: {
+            color: "#7a8a9e",
+            maxRotation: 45,
+            minRotation: 45,
+            callback(value) {
+              const v = Number(this.getLabelForValue(value));
+              return cfg.bucketIsPrice ? v.toFixed(2) : v.toLocaleString();
             }
           },
-          plugins: {
-            legend: {
-              labels: {
-                color: "#f5f7fa",
-                boxWidth: 20,
-                boxHeight: 10,
-                usePointStyle: false
-              }
+          title: {
+            display: true,
+            text: xLabel,
+            color: "#7a8a9e",
+            font: { size: 10 }
+          }
+        },
+        y: {
+          grid: { color: "rgba(255,255,255,0.05)" },
+          ticks: {
+            color: "#7a8a9e",
+            callback(v) { return fmtShort(Number(v)); }
+          }
+        }
+      },
+      plugins: {
+        legend: { labels: { color: "#c8d4e0", boxWidth: 14, boxHeight: 10 } },
+        tooltip: {
+          backgroundColor: "rgba(10,14,20,0.96)",
+          borderColor: "rgba(255,255,255,0.08)",
+          borderWidth: 1,
+          titleColor: "#ffffff",
+          bodyColor: "#c8d4e0",
+          padding: 12,
+          callbacks: {
+            title(items) {
+              const v = Number(items[0].label);
+              return cfg.bucketIsPrice
+                ? `Price from $${v.toFixed(4)}`
+                : `Tick from ${v.toLocaleString()}`;
             },
-            tooltip: {
-              backgroundColor: "rgba(14,18,25,0.96)",
-              borderColor: "rgba(255,255,255,0.08)",
-              borderWidth: 1,
-              titleColor: "#ffffff",
-              bodyColor: "#dfe7f1",
-              padding: 12,
-              callbacks: {
-                title: function(items) {
-                  const raw = Number(items[0].label);
-                  return `Price from ${raw.toFixed(2)}`;
-                },
-                label: function(context) {
-                  return `${context.dataset.label}: ${fmtShort(num(context.raw))}`;
-                }
-              }
+            label(ctx) {
+              return `${ctx.dataset.label}: ${fmtShort(num(ctx.raw))}`;
             }
           }
         }
-      });
+      }
+    }
+  });
+}
 
-      const timeLabels = snapshots.map(r => r.timestamp_utc);
-      const prices = snapshots.map(r => num(r.price_usd_per_lmts));
+// ── PRICE HISTORY CHART ──────────────────────────────────
+function buildPriceChart(cfg, snapshots) {
+  const timeLabels = snapshots.map(r => r.timestamp_utc);
+  const prices = snapshots.map(r => num(r.price_usd_per_lmts));
 
-      new Chart(document.getElementById("priceChart"), {
-        type: "line",
-        data: {
-          labels: timeLabels,
-          datasets: [
-            {
-              label: "Price USD per LMTS",
-              data: prices,
-              borderColor: "#8ea2ff",
-              backgroundColor: "rgba(142,162,255,0.18)",
-              tension: 0.22,
-              pointRadius: 3,
-              pointHoverRadius: 4,
-              fill: false
-            }
-          ]
+  chartInstances.price = new Chart(document.getElementById("priceChart"), {
+    type: "line",
+    data: {
+      labels: timeLabels,
+      datasets: [{
+        label: "Price USD / LMTS",
+        data: prices,
+        borderColor: cfg.priceColor,
+        backgroundColor: cfg.priceFill,
+        tension: 0.25,
+        pointRadius: 2,
+        pointHoverRadius: 4,
+        fill: true,
+        borderWidth: 2,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: "index", intersect: false },
+      scales: {
+        x: {
+          grid: { color: "rgba(255,255,255,0.03)" },
+          ticks: { color: "#7a8a9e", maxTicksLimit: 6 }
         },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          interaction: {
-            mode: "index",
-            intersect: false
-          },
-          scales: {
-            x: {
-              grid: {
-                color: "rgba(255,255,255,0.04)",
-                drawBorder: false
-              },
-              ticks: {
-                color: "#c7d0d9",
-                maxTicksLimit: 6
-              }
-            },
-            y: {
-              grid: {
-                color: "rgba(255,255,255,0.06)",
-                drawBorder: false
-              },
-              ticks: {
-                color: "#c7d0d9",
-                callback: function(value) {
-                  return fmtPrice(Number(value));
-                }
-              }
-            }
-          },
-          plugins: {
-            legend: {
-              labels: { color: "#f5f7fa" }
-            },
-            tooltip: {
-              backgroundColor: "rgba(14,18,25,0.96)",
-              borderColor: "rgba(255,255,255,0.08)",
-              borderWidth: 1,
-              titleColor: "#ffffff",
-              bodyColor: "#dfe7f1",
-              padding: 12,
-              callbacks: {
-                label: function(context) {
-                  return `Price: ${fmtPrice(num(context.raw))}`;
-                }
-              }
-            }
+        y: {
+          grid: { color: "rgba(255,255,255,0.05)" },
+          ticks: {
+            color: "#7a8a9e",
+            callback(v) { return fmtPrice(Number(v)); }
           }
         }
-      });
-
-      const body = document.getElementById("positionsBody");
-
-      positions
-        .map(p => {
-          const curUsdc = num(p.cur_usdc);
-          const curLmts = num(p.cur_lmts);
-          const currentValueUsd = curUsdc + curLmts * currentPrice;
-
-          return {
-            ...p,
-            currentValueUsd
-          };
-        })
-        .sort((a, b) => b.currentValueUsd - a.currentValueUsd)
-        .forEach(p => {
-          const tr = document.createElement("tr");
-          const low = Number(p.price_lower_usd_per_lmts);
-          const high = Number(p.price_upper_usd_per_lmts);
-          const range = `${low.toFixed(4)} – ${high.toFixed(4)}`;
-          const isInRange = String(p.in_range).toUpperCase() === "TRUE";
-
-          tr.innerHTML = `
-            <td>${p.token_id || "-"}</td>
-            <td class="${p.type === "ours" ? "ours" : "ext"}">${p.label || p.type || "-"}</td>
-            <td>${range}</td>
-            <td class="${isInRange ? "inrange" : "outrange"}">${isInRange ? "YES" : "NO"}</td>
-            <td>${fmtUsd(num(p.cur_usdc))}</td>
-            <td>${fmtShort(num(p.cur_lmts))}</td>
-            <td>${fmtUsd(p.currentValueUsd)}</td>
-          `;
-          body.appendChild(tr);
-        });
+      },
+      plugins: {
+        legend: { labels: { color: "#c8d4e0" } },
+        tooltip: {
+          backgroundColor: "rgba(10,14,20,0.96)",
+          borderColor: "rgba(255,255,255,0.08)",
+          borderWidth: 1,
+          titleColor: "#ffffff",
+          bodyColor: "#c8d4e0",
+          padding: 12,
+          callbacks: {
+            label(ctx) { return `Price: ${fmtPrice(num(ctx.raw))}`; }
+          }
+        }
+      }
     }
+  });
+}
 
-    main().catch(err => {
-      document.body.insertAdjacentHTML("beforeend", `<pre style="color:#ff7b7b;padding:16px;">${err.message}</pre>`);
-      console.error(err);
+// ── POSITIONS TABLE ──────────────────────────────────────
+function buildPositionsTable(cfg, positions, currentPrice) {
+  const body = document.getElementById("positionsBody");
+  if (!body) return;
+
+  positions
+    .map(p => {
+      const curUsdc = num(p.cur_usdc);
+      const curLmts = num(p.cur_lmts);
+      return { ...p, currentValueUsd: curUsdc + curLmts * currentPrice };
+    })
+    .sort((a, b) => b.currentValueUsd - a.currentValueUsd)
+    .forEach(p => {
+      const tr = document.createElement("tr");
+      const isOurs = p.type === "ours";
+      const isInRange = String(p.in_range).toUpperCase() === "TRUE";
+
+      let rangeCell = "-";
+      if (cfg.bucketIsPrice) {
+        const low  = Number(p.price_lower_usd_per_lmts);
+        const high = Number(p.price_upper_usd_per_lmts);
+        rangeCell = `${low.toFixed(4)} – ${high.toFixed(4)}`;
+      } else {
+        const tl = p.tick_lower !== undefined ? p.tick_lower : "-";
+        const tu = p.tick_upper !== undefined ? p.tick_upper : "-";
+        rangeCell = `${tl} – ${tu}`;
+      }
+
+      tr.innerHTML = `
+        <td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--muted)">${p.token_id || "-"}</td>
+        <td><span class="${isOurs ? "tag-ours" : "tag-ext"}">${p.label || p.type || "ext"}</span></td>
+        <td style="font-size:11px;color:var(--muted)">${rangeCell}</td>
+        <td class="${isInRange ? "inrange" : "outrange"}">${isInRange ? "● IN" : "○ OUT"}</td>
+        <td>${fmtUsd(num(p.cur_usdc))}</td>
+        <td>${fmtShort(num(p.cur_lmts))}</td>
+        <td style="font-weight:700">${fmtUsd(p.currentValueUsd)}</td>
+      `;
+      body.appendChild(tr);
     });
-  </script>
+}
+
+// ── INIT ─────────────────────────────────────────────────
+const initCfg = POOLS[currentPool];
+applyPoolTheme(initCfg);
+renderDash(initCfg);
+</script>
 </body>
 </html>
