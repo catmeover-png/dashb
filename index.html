@@ -24,19 +24,15 @@
       --pool-accent-dim: rgba(192,132,252,0.12);
       --pool-accent-glow: rgba(192,132,252,0.2);
     }
-
     * { box-sizing: border-box; margin: 0; padding: 0; }
-
     body {
       font-family: 'DM Mono', monospace;
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
       overflow-x: hidden;
-      /* tabular numbers everywhere — no more jumping */
       font-variant-numeric: tabular-nums;
     }
-
     body::before {
       content: '';
       position: fixed;
@@ -45,7 +41,6 @@
       pointer-events: none;
       z-index: 0;
     }
-
     .wrap {
       position: relative;
       z-index: 1;
@@ -53,8 +48,6 @@
       margin: 0 auto;
       padding: 28px 20px 60px;
     }
-
-    /* ── HEADER ── */
     .header {
       display: flex;
       align-items: flex-start;
@@ -63,18 +56,15 @@
       flex-wrap: wrap;
       gap: 16px;
     }
-
     .header-left h1 {
       font-family: 'Outfit', sans-serif;
       font-size: 26px;
       font-weight: 800;
       letter-spacing: -0.02em;
       line-height: 1;
-      font-variant-numeric: normal; /* heading doesn't need tabular */
+      font-variant-numeric: normal;
     }
-
     .header-left h1 .accent { color: var(--pool-accent); }
-
     .header-left .subtitle {
       font-size: 10px;
       color: var(--muted);
@@ -82,8 +72,6 @@
       letter-spacing: 0.1em;
       text-transform: uppercase;
     }
-
-    /* ── SWITCHER ── */
     .switcher {
       display: flex;
       background: var(--panel);
@@ -92,7 +80,6 @@
       padding: 4px;
       gap: 4px;
     }
-
     .switcher button {
       font-family: 'DM Mono', monospace;
       font-size: 11px;
@@ -106,29 +93,25 @@
       color: var(--muted);
       letter-spacing: 0.05em;
     }
-
     .switcher button.active {
       background: var(--pool-accent-dim);
       color: var(--pool-accent);
       box-shadow: 0 0 12px var(--pool-accent-glow);
     }
-
     .switcher button:hover:not(.active) {
       color: var(--text);
       background: rgba(255,255,255,0.04);
     }
-
-    /* ── STATUS ── */
     .status-bar {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       font-size: 10px;
       color: var(--muted);
       margin-bottom: 18px;
       letter-spacing: 0.06em;
+      flex-wrap: wrap;
     }
-
     .status-dot {
       width: 6px; height: 6px;
       border-radius: 50%;
@@ -137,17 +120,32 @@
       animation: pulse 2.2s ease-in-out infinite;
       flex-shrink: 0;
     }
-
+    .live-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: rgba(57,255,154,0.08);
+      border: 1px solid rgba(57,255,154,0.2);
+      color: var(--green);
+      font-size: 9px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .live-badge .dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--green);
+      animation: pulse 1.5s ease-in-out infinite;
+    }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
-
-    /* ── CARDS ── */
     .cards {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 10px;
       margin-bottom: 14px;
     }
-
     .card {
       background: var(--panel);
       border: 1px solid var(--border);
@@ -156,7 +154,6 @@
       position: relative;
       overflow: hidden;
     }
-
     .card::before {
       content: '';
       position: absolute;
@@ -165,15 +162,16 @@
       background: linear-gradient(90deg, transparent 5%, var(--pool-accent) 50%, transparent 95%);
       opacity: 0.5;
     }
-
     .card .label {
       font-size: 9px;
       color: var(--muted);
       text-transform: uppercase;
       letter-spacing: 0.12em;
       margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
-
     .card .value {
       font-family: 'DM Mono', monospace;
       font-size: 22px;
@@ -181,12 +179,8 @@
       line-height: 1.15;
       color: var(--text);
       font-variant-numeric: tabular-nums;
-      /* fixed character width prevents jumping */
     }
-
     .card .value.accent { color: var(--pool-accent); }
-
-    /* ── PANELS ── */
     .panel {
       background: var(--panel);
       border: 1px solid var(--border);
@@ -194,7 +188,6 @@
       padding: 18px 20px;
       margin-bottom: 14px;
     }
-
     .panel-title {
       font-family: 'Outfit', sans-serif;
       font-size: 11px;
@@ -206,9 +199,9 @@
       display: flex;
       align-items: center;
       gap: 8px;
+      flex-wrap: wrap;
       font-variant-numeric: normal;
     }
-
     .panel-title .pill {
       font-family: 'DM Mono', monospace;
       font-size: 9px;
@@ -219,28 +212,36 @@
       color: var(--pool-accent);
       letter-spacing: 0.06em;
     }
-
+    .panel-title .pill-live {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      font-weight: 400;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: rgba(57,255,154,0.08);
+      color: var(--green);
+      border: 1px solid rgba(57,255,154,0.2);
+      letter-spacing: 0.06em;
+    }
+    .panel-title .live-ts {
+      margin-left: auto;
+      font-size: 9px;
+      color: rgba(57,255,154,0.4);
+      letter-spacing: 0.06em;
+      font-family: 'DM Mono', monospace;
+      font-weight: 400;
+    }
     .grid {
       display: grid;
       grid-template-columns: 1.55fr 1fr;
       gap: 14px;
       align-items: start;
     }
-
-    /* ── CHARTS ── */
     .chart-wrap { position: relative; }
     .chart-wrap canvas { width: 100% !important; height: 100% !important; }
-
-    /* ── MINI TABLE ── */
-    .mini-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 11px;
-    }
-
+    .mini-table { width: 100%; border-collapse: collapse; font-size: 11px; }
     .mini-table tr { border-bottom: 1px solid rgba(28,36,51,0.8); }
     .mini-table tr:last-child { border-bottom: none; }
-
     .mini-table th {
       color: var(--muted);
       font-weight: 400;
@@ -251,7 +252,6 @@
       text-align: left;
       width: 55%;
     }
-
     .mini-table td {
       padding: 9px 0;
       text-align: right;
@@ -259,28 +259,18 @@
       color: var(--text);
       font-variant-numeric: tabular-nums;
     }
-
-    .mini-table td.green { color: var(--green); }
-    .mini-table td.blue  { color: var(--blue); }
+    .mini-table td.green  { color: var(--green); }
+    .mini-table td.blue   { color: var(--blue); }
     .mini-table td.accent { color: var(--pool-accent); }
-
-    /* ── POSITIONS TABLE ── */
     .table-wrap {
-      max-height: 500px;
+      max-height: 560px;
       overflow: auto;
       border-radius: 8px;
     }
-
     .table-wrap::-webkit-scrollbar { width: 3px; height: 3px; }
     .table-wrap::-webkit-scrollbar-track { background: transparent; }
     .table-wrap::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 3px; }
-
-    table.pos-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 11px;
-    }
-
+    table.pos-table { width: 100%; border-collapse: collapse; font-size: 11px; }
     table.pos-table th,
     table.pos-table td {
       padding: 8px 12px;
@@ -289,7 +279,6 @@
       white-space: nowrap;
       font-variant-numeric: tabular-nums;
     }
-
     table.pos-table th {
       color: var(--muted);
       font-weight: 500;
@@ -301,9 +290,11 @@
       background: #0d1117;
       z-index: 2;
     }
-
+    table.pos-table th.live-col { color: var(--green); opacity: 0.85; }
     table.pos-table tbody tr:hover { background: rgba(255,255,255,0.02); }
-
+    .col-sep { border-left: 1px solid rgba(57,255,154,0.12) !important; }
+    .live-val { color: var(--green) !important; }
+    .live-dim { color: rgba(57,255,154,0.55) !important; }
     .tag {
       display: inline-block;
       padding: 2px 7px;
@@ -313,14 +304,10 @@
       text-transform: uppercase;
       letter-spacing: 0.07em;
     }
-
     .tag-ours { background: var(--green-dim); color: var(--green); }
     .tag-ext  { background: var(--blue-dim);  color: var(--blue); }
-
     .inrange  { color: var(--green); }
     .outrange { color: var(--muted); }
-
-    /* ── LOADING / ERROR ── */
     .loading {
       display: flex;
       flex-direction: column;
@@ -333,7 +320,6 @@
       letter-spacing: 0.12em;
       text-transform: uppercase;
     }
-
     .spinner {
       width: 28px; height: 28px;
       border: 2px solid var(--border);
@@ -341,9 +327,7 @@
       border-radius: 50%;
       animation: spin 0.75s linear infinite;
     }
-
     @keyframes spin { to { transform: rotate(360deg); } }
-
     .error-msg {
       color: var(--danger);
       font-size: 11px;
@@ -353,8 +337,6 @@
       border-radius: 8px;
       margin-top: 12px;
     }
-
-    /* ── RESPONSIVE ── */
     @media (max-width: 1100px) {
       .cards { grid-template-columns: repeat(2, 1fr); }
       .grid  { grid-template-columns: 1fr; }
@@ -375,14 +357,17 @@
       <div class="subtitle" id="headerSubtitle">Uniswap V3 · Base Network · LP Position Tracker</div>
     </div>
     <div class="switcher">
-      <button id="btnUni"  class="active" onclick="switchPool('uni')">⬡ UniV3</button>
-      <button id="btnAero"             onclick="switchPool('aero')">◈ Aerodrome</button>
+      <button id="btnUni"  class="active" onclick="switchPool('uni')">&#x2B21; UniV3</button>
+      <button id="btnAero"             onclick="switchPool('aero')">&#x25C8; Aerodrome</button>
     </div>
   </div>
 
   <div class="status-bar">
     <div class="status-dot"></div>
     <span id="lastUpdate">Loading…</span>
+    <span id="livePriceBadge" style="display:none" class="live-badge">
+      <span class="dot"></span>live: <span id="livePriceVal">—</span>
+    </span>
   </div>
 
   <div id="dashContent">
@@ -394,121 +379,186 @@
 // ── CONFIG ───────────────────────────────────────────────
 const POOLS = {
   uni: {
-    sheetId:   "1oJf881yq6bhUSlLBvuiG8n_hj2pWvPO-7lvis0eKXVs",
-    name:      "UniV3",
-    subtitle:  "Uniswap V3 · Base Network · LP Position Tracker",
-    accent:    "#c084fc",
-    accentDim: "rgba(192,132,252,0.12)",
-    accentGlow:"rgba(192,132,252,0.2)",
-    barOur:    "rgba(57,255,154,0.88)",
-    barExt:    "rgba(192,132,252,0.28)",
-    barOurB:   "rgba(57,255,154,1)",
-    barExtB:   "rgba(192,132,252,0.6)",
-    lineColor: "#c084fc",
-    lineFill:  "rgba(192,132,252,0.1)",
-    sheets:    { buckets:"buckets", snapshots:"snapshots", positions:"positions" },
+    sheetId:    "1oJf881yq6bhUSlLBvuiG8n_hj2pWvPO-7lvis0eKXVs",
+    name:       "UniV3",
+    subtitle:   "Uniswap V3 · Base Network · LP Position Tracker",
+    accent:     "#c084fc",
+    accentDim:  "rgba(192,132,252,0.12)",
+    accentGlow: "rgba(192,132,252,0.2)",
+    barOur:     "rgba(57,255,154,0.88)",
+    barExt:     "rgba(192,132,252,0.28)",
+    barOurB:    "rgba(57,255,154,1)",
+    barExtB:    "rgba(192,132,252,0.6)",
+    lineColor:  "#c084fc",
+    lineFill:   "rgba(192,132,252,0.1)",
+    sheets:     { buckets:"buckets", snapshots:"snapshots", positions:"positions" },
+    hasLive:    false,
+    dexPair:    "0x9e4a0e8df94a2b80af6a3a6e8a2fa4b3c4e9ffc5",
   },
   aero: {
-    sheetId:   "14zlvfkLX8Hs3_duak9ID0BGsLfyIVJ_UZ9MOP9lY-oE",
-    name:      "Aerodrome",
-    subtitle:  "Aerodrome Slipstream · Base Network · LP Position Tracker",
-    accent:    "#00d4aa",
-    accentDim: "rgba(0,212,170,0.12)",
-    accentGlow:"rgba(0,212,170,0.2)",
-    barOur:    "rgba(57,255,154,0.88)",
-    barExt:    "rgba(0,212,170,0.28)",
-    barOurB:   "rgba(57,255,154,1)",
-    barExtB:   "rgba(0,212,170,0.6)",
-    lineColor: "#00d4aa",
-    lineFill:  "rgba(0,212,170,0.1)",
-    sheets:    { buckets:"aero_buckets", snapshots:"aero_snapshots", positions:"aero_positions" },
+    sheetId:    "14zlvfkLX8Hs3_duak9ID0BGsLfyIVJ_UZ9MOP9lY-oE",
+    name:       "Aerodrome",
+    subtitle:   "Aerodrome Slipstream · Base Network · LP Position Tracker",
+    accent:     "#00d4aa",
+    accentDim:  "rgba(0,212,170,0.12)",
+    accentGlow: "rgba(0,212,170,0.2)",
+    barOur:     "rgba(57,255,154,0.88)",
+    barExt:     "rgba(0,212,170,0.28)",
+    barOurB:    "rgba(57,255,154,1)",
+    barExtB:    "rgba(0,212,170,0.6)",
+    lineColor:  "#00d4aa",
+    lineFill:   "rgba(0,212,170,0.1)",
+    sheets:     { buckets:"aero_buckets", snapshots:"aero_snapshots", positions:"aero_positions" },
+    hasLive:    true,
+    dexPair:    "0xbe4C36B9542610dF83Ca690c8b5BC53BbbC5d542",
   }
 };
 
-let activePool = "uni";
-let charts = {};
+let activePool  = "uni";
+let charts      = {};
+let livePrice   = null;
+let livePriceTimer = null;
+let cachedPositions = null;
+let cachedCfg = null;
 
 // ── THEME ────────────────────────────────────────────────
 function applyTheme(cfg) {
   const r = document.documentElement;
-  r.style.setProperty("--pool-accent",     cfg.accent);
-  r.style.setProperty("--pool-accent-dim", cfg.accentDim);
-  r.style.setProperty("--pool-accent-glow",cfg.accentGlow);
+  r.style.setProperty("--pool-accent",      cfg.accent);
+  r.style.setProperty("--pool-accent-dim",  cfg.accentDim);
+  r.style.setProperty("--pool-accent-glow", cfg.accentGlow);
 }
 
 // ── UTILS ────────────────────────────────────────────────
 const num = v => { const x = Number(v); return isFinite(x) ? x : 0; };
-
 function fmtShort(v) {
   if (!isFinite(v)) return "—";
   const a = Math.abs(v);
-  if (a >= 1e12) return (v/1e12).toFixed(2)+"T";
-  if (a >= 1e9)  return (v/1e9).toFixed(2)+"B";
-  if (a >= 1e6)  return (v/1e6).toFixed(2)+"M";
-  if (a >= 1e3)  return (v/1e3).toFixed(2)+"K";
+  if (a >= 1e6) return (v/1e6).toFixed(2)+"M";
+  if (a >= 1e3) return (v/1e3).toFixed(2)+"K";
   return v.toLocaleString("en-US", { maximumFractionDigits: 2 });
 }
-
 const fmtUsd   = v => isFinite(v) ? "$" + v.toLocaleString("en-US", { minimumFractionDigits:2, maximumFractionDigits:2 }) : "—";
 const fmtPrice = v => isFinite(v) ? "$" + v.toLocaleString("en-US", { minimumFractionDigits:4, maximumFractionDigits:6 }) : "—";
-
 async function fetchJson(url) {
   const r = await fetch(url);
-  if (!r.ok) throw new Error(`HTTP ${r.status}: ${url}`);
+  if (!r.ok) throw new Error("HTTP " + r.status + ": " + url);
   return r.json();
 }
-
-const sheetUrl = (id, tab) => `https://opensheet.elk.sh/${id}/${tab}`;
-const setText  = (id, v)   => { const el = document.getElementById(id); if(el) el.textContent = v; };
-
+const sheetUrl = (id, tab) => "https://opensheet.elk.sh/" + id + "/" + tab;
+const setText  = (id, v)   => { const el = document.getElementById(id); if (el) el.textContent = v; };
 function destroyCharts() {
   Object.values(charts).forEach(c => { try { c.destroy(); } catch(e){} });
   charts = {};
 }
 
-// ── SWITCH ───────────────────────────────────────────────
+// ── LIVE PRICE ────────────────────────────────────────────
+async function fetchLivePrice(pairAddress) {
+  try {
+    const data = await fetchJson("https://api.dexscreener.com/latest/dex/pairs/base/" + pairAddress);
+    const p = data && data.pair && data.pair.priceUsd;
+    return p ? parseFloat(p) : null;
+  } catch(e) {
+    console.warn("DexScreener error:", e);
+    return null;
+  }
+}
+
+function startLivePriceLoop(cfg) {
+  if (livePriceTimer) clearInterval(livePriceTimer);
+  async function tick() {
+    const p = await fetchLivePrice(cfg.dexPair);
+    if (p && p > 0) {
+      livePrice = p;
+      const badge = document.getElementById("livePriceBadge");
+      if (badge) badge.style.display = "inline-flex";
+      setText("livePriceVal", fmtPrice(p));
+      // update price card
+      const priceEl = document.getElementById("price");
+      if (priceEl) priceEl.textContent = fmtPrice(p);
+      // refresh positions table
+      if (cachedPositions) {
+        refreshPositionsTable(cachedPositions, p, cfg.hasLive);
+        refreshSummaryCards(cachedPositions, p);
+      }
+      // update live-ts timestamp
+      const ts = document.getElementById("liveTs");
+      if (ts) ts.textContent = "updated " + new Date().toLocaleTimeString();
+    }
+  }
+  tick();
+  livePriceTimer = setInterval(tick, 60000);
+}
+
+// ── LIVE POSITION MATH ────────────────────────────────────
+function calcLive(tickLower, tickUpper, liquidityStr, priceUsd) {
+  try {
+    const Q96f = Math.pow(2, 96);
+    const sqrtP_float = Math.sqrt((1 / priceUsd) * Math.pow(10, 12)) * Q96f;
+    const Q96  = BigInt(2) ** BigInt(96);
+    const sqrtP = BigInt(Math.round(sqrtP_float));
+    const sqrtL = BigInt(Math.round(Math.pow(1.0001, tickLower / 2) * Q96f));
+    const sqrtU = BigInt(Math.round(Math.pow(1.0001, tickUpper / 2) * Q96f));
+    const L = BigInt(String(liquidityStr).trim().replace(/\..*/, ""));
+    let a0 = BigInt(0), a1 = BigInt(0);
+    if (sqrtP <= sqrtL) {
+      a0 = L * Q96 / sqrtL - L * Q96 / sqrtU;
+    } else if (sqrtP < sqrtU) {
+      a0 = L * Q96 / sqrtP - L * Q96 / sqrtU;
+      a1 = L * (sqrtP - sqrtL) / Q96;
+    } else {
+      a1 = L * (sqrtU - sqrtL) / Q96;
+    }
+    return {
+      usdc:    Number(a0) / 1e6,
+      lmts:    Number(a1) / 1e18,
+      inRange: sqrtP > sqrtL && sqrtP < sqrtU,
+    };
+  } catch(e) {
+    return { usdc: 0, lmts: 0, inRange: false };
+  }
+}
+
+// ── SWITCH ────────────────────────────────────────────────
 function switchPool(pool) {
   if (pool === activePool) return;
   activePool = pool;
+  cachedPositions = null;
+  livePrice = null;
   const cfg = POOLS[pool];
   applyTheme(cfg);
   document.getElementById("btnUni").classList.toggle("active",  pool === "uni");
   document.getElementById("btnAero").classList.toggle("active", pool === "aero");
   document.getElementById("headerPoolName").textContent = cfg.name;
   document.getElementById("headerSubtitle").textContent = cfg.subtitle;
+  const badge = document.getElementById("livePriceBadge");
+  if (badge) badge.style.display = "none";
   destroyCharts();
   renderDash(cfg);
 }
 
-// ── MAIN RENDER ──────────────────────────────────────────
+// ── MAIN RENDER ───────────────────────────────────────────
 async function renderDash(cfg) {
+  cachedCfg = cfg;
   const content = document.getElementById("dashContent");
-  content.innerHTML = `<div class="loading"><div class="spinner"></div><span>Loading ${cfg.name}…</span></div>`;
-
+  content.innerHTML = '<div class="loading"><div class="spinner"></div><span>Loading ' + cfg.name + '…</span></div>';
   try {
     const [buckets, snapshots, positions] = await Promise.all([
       fetchJson(sheetUrl(cfg.sheetId, cfg.sheets.buckets)),
       fetchJson(sheetUrl(cfg.sheetId, cfg.sheets.snapshots)),
       fetchJson(sheetUrl(cfg.sheetId, cfg.sheets.positions)),
     ]);
-
+    cachedPositions = positions;
     const snap  = snapshots[snapshots.length - 1] || {};
     const price = num(snap.price_usd_per_lmts);
-    const ourV  = num(snap.our_cur_usdc) + num(snap.our_cur_lmts) * price;
-    const extV  = num(snap.ext_cur_usdc) + num(snap.ext_cur_lmts) * price;
 
-    document.getElementById("lastUpdate").textContent =
-      `Updated ${snap.timestamp_utc || "—"} UTC  ·  Block ${snap.last_block || "—"}`;
-
+    setText("lastUpdate", "Updated " + (snap.timestamp_utc || "—") + " UTC  ·  Block " + (snap.last_block || "—"));
     content.innerHTML = buildHTML(cfg);
 
-    // stat cards
-    setText("price",        fmtPrice(price));
-    setText("openPositions",String(num(snap.open_positions)));
-    setText("ourValueUsd",  fmtUsd(ourV));
-    setText("extValueUsd",  fmtUsd(extV));
-
-    // snapshot panel
+    setText("price",         fmtPrice(price));
+    setText("openPositions", String(num(snap.open_positions)));
+    setText("ourValueUsd",   "—");
+    setText("extValueUsd",   "—");
     setText("ourUsdc", fmtUsd(num(snap.our_cur_usdc)));
     setText("ourLmts", fmtShort(num(snap.our_cur_lmts)) + " LMTS");
     setText("extUsdc", fmtUsd(num(snap.ext_cur_usdc)));
@@ -520,124 +570,188 @@ async function renderDash(cfg) {
 
     buildLiqChart(cfg, buckets);
     buildPriceChart(cfg, snapshots);
-    buildPositionsTable(positions, price);
-
-  } catch (err) {
-    content.innerHTML = `<div class="error-msg">⚠ ${err.message}</div>`;
+    refreshPositionsTable(positions, price, cfg.hasLive);
+    refreshSummaryCards(positions, price);
+    startLivePriceLoop(cfg);
+  } catch(err) {
+    content.innerHTML = '<div class="error-msg">&#9888; ' + err.message + '</div>';
     console.error(err);
   }
 }
 
-// ── HTML SKELETON ────────────────────────────────────────
-function buildHTML(cfg) {
-  return `
-  <div class="cards">
-    <div class="card">
-      <div class="label">Current Price</div>
-      <div class="value accent" id="price">—</div>
-    </div>
-    <div class="card">
-      <div class="label">Open Positions</div>
-      <div class="value" id="openPositions">—</div>
-    </div>
-    <div class="card">
-      <div class="label">Our Value (USD)</div>
-      <div class="value" id="ourValueUsd">—</div>
-    </div>
-    <div class="card">
-      <div class="label">External Value (USD)</div>
-      <div class="value" id="extValueUsd">—</div>
-    </div>
-  </div>
-
-  <div class="panel">
-    <div class="panel-title">Liquidity Distribution <span class="pill">${cfg.name} · USD/LMTS</span></div>
-    <div class="chart-wrap" style="height:360px"><canvas id="liqChart"></canvas></div>
-  </div>
-
-  <div class="grid">
-    <div class="panel">
-      <div class="panel-title">Price History <span class="pill">LMTS / USD</span></div>
-      <div class="chart-wrap" style="height:300px"><canvas id="priceChart"></canvas></div>
-    </div>
-    <div class="panel">
-      <div class="panel-title">Current Snapshot <span class="pill">${cfg.name}</span></div>
-      <table class="mini-table">
-        <tr><th>Our USDC</th>      <td class="green"  id="ourUsdc">—</td></tr>
-        <tr><th>Our LMTS</th>      <td class="green"  id="ourLmts">—</td></tr>
-        <tr><th>Ext USDC</th>      <td class="blue"   id="extUsdc">—</td></tr>
-        <tr><th>Ext LMTS</th>      <td class="blue"   id="extLmts">—</td></tr>
-        <tr><th>Unique Owners</th> <td               id="owners">—</td></tr>
-        <tr><th>In-Range</th>      <td class="accent" id="inRange">—</td></tr>
-        <tr><th>Our Positions</th> <td               id="ourPos">—</td></tr>
-        <tr><th>Current Tick</th>  <td               id="tick">—</td></tr>
-      </table>
-    </div>
-  </div>
-
-  <div class="panel">
-    <div class="panel-title">Open Positions <span class="pill">${cfg.name}</span></div>
-    <div class="table-wrap">
-      <table class="pos-table">
-        <thead><tr>
-          <th>Token ID</th>
-          <th>Label</th>
-          <th>Price Range (USD/LMTS)</th>
-          <th>In Range</th>
-          <th>Cur USDC</th>
-          <th>Cur LMTS</th>
-          <th>Value USD</th>
-        </tr></thead>
-        <tbody id="posBody"></tbody>
-      </table>
-    </div>
-  </div>`;
+// ── SUMMARY CARDS ─────────────────────────────────────────
+function refreshSummaryCards(positions, price) {
+  let ourV = 0, extV = 0;
+  for (const p of positions) {
+    const liq = String(p.liquidity || "0").trim();
+    if (!liq || liq === "0" || liq === "") continue;
+    let usdc, lmts;
+    if (livePrice && p.live_cur_usdc !== undefined && p.live_cur_usdc !== "") {
+      usdc = num(p.live_cur_usdc);
+      lmts = num(p.live_cur_lmts);
+    } else if (livePrice) {
+      const c = calcLive(parseInt(p.tick_lower), parseInt(p.tick_upper), liq, livePrice);
+      usdc = c.usdc; lmts = c.lmts;
+    } else {
+      usdc = num(p.cur_usdc); lmts = num(p.cur_lmts);
+    }
+    const val = usdc + lmts * (livePrice || price);
+    if (p.type === "ours") ourV += val; else extV += val;
+  }
+  setText("ourValueUsd", fmtUsd(ourV));
+  setText("extValueUsd", fmtUsd(extV));
 }
 
-// ── LIQUIDITY CHART ──────────────────────────────────────
-function buildLiqChart(cfg, buckets) {
-  // Both pools now use price buckets (price_lower_usd_per_lmts)
-  const labels  = buckets.map(r => num(r.price_lower_usd_per_lmts));
-  const ourLiq  = buckets.map(r => num(r.our_liquidity));
-  const extLiq  = buckets.map(r => num(r.ext_liquidity));
+// ── POSITIONS TABLE ───────────────────────────────────────
+function refreshPositionsTable(positions, snapshotPrice, hasLive) {
+  const body = document.getElementById("posBody");
+  if (!body) return;
+  body.innerHTML = "";
 
+  const thead = document.getElementById("posHead");
+  const useLiveCols = hasLive || !!livePrice;
+  if (thead) {
+    thead.innerHTML = "<tr>" +
+      "<th>Token ID</th>" +
+      "<th>Label</th>" +
+      "<th>Price Range</th>" +
+      "<th>Snapshot In Range</th>" +
+      "<th>Snapshot USDC</th>" +
+      "<th>Snapshot LMTS</th>" +
+      (useLiveCols
+        ? '<th class="live-col col-sep">&#9889; Live USDC</th>' +
+          '<th class="live-col">&#9889; Live LMTS</th>' +
+          '<th class="live-col">Live In Range</th>' +
+          '<th class="live-col">Live Value USD</th>'
+        : "<th>Value USD</th>") +
+      "</tr>";
+  }
+
+  const currentPrice = livePrice || snapshotPrice;
+
+  const rows = positions
+    .filter(p => { const l = String(p.liquidity||"0").trim(); return l && l !== "0"; })
+    .map(p => {
+      const liq = String(p.liquidity || "0").trim();
+      let lUsdc, lLmts, lInRange;
+      const hasSheetLive = p.live_cur_usdc !== undefined && String(p.live_cur_usdc).trim() !== "";
+      if (hasSheetLive) {
+        lUsdc = num(p.live_cur_usdc);
+        lLmts = num(p.live_cur_lmts);
+        lInRange = String(p.live_in_range).toUpperCase() === "TRUE";
+      } else if (livePrice) {
+        const c = calcLive(parseInt(p.tick_lower), parseInt(p.tick_upper), liq, livePrice);
+        lUsdc = c.usdc; lLmts = c.lmts; lInRange = c.inRange;
+      } else {
+        lUsdc = num(p.cur_usdc); lLmts = num(p.cur_lmts);
+        lInRange = String(p.in_range).toUpperCase() === "TRUE";
+      }
+      return { ...p, _lu: lUsdc, _ll: lLmts, _li: lInRange, _lv: lUsdc + lLmts * currentPrice };
+    })
+    .sort((a, b) => b._lv - a._lv);
+
+  rows.forEach(p => {
+    const isOurs     = p.type === "ours";
+    const snapIn     = String(p.in_range).toUpperCase() === "TRUE";
+    const lo = Number(p.price_lower_usd_per_lmts);
+    const hi = Number(p.price_upper_usd_per_lmts);
+    const range = (isFinite(lo) && isFinite(hi))
+      ? "$" + lo.toFixed(4) + " – $" + hi.toFixed(4)
+      : (p.tick_lower || "—") + " – " + (p.tick_upper || "—");
+    const snapVal = num(p.cur_usdc) + num(p.cur_lmts) * snapshotPrice;
+
+    const tr = document.createElement("tr");
+    tr.innerHTML =
+      '<td style="color:var(--muted);font-size:10px">' + (p.token_id || "—") + "</td>" +
+      "<td><span class=\"tag " + (isOurs ? "tag-ours" : "tag-ext") + "\">" + (p.label || p.type || "ext") + "</span></td>" +
+      '<td style="color:var(--muted);font-size:10px">' + range + "</td>" +
+      '<td class="' + (snapIn ? "inrange" : "outrange") + '">' + (snapIn ? "● IN" : "○ OUT") + "</td>" +
+      '<td style="color:var(--muted)">' + fmtUsd(num(p.cur_usdc)) + "</td>" +
+      '<td style="color:var(--muted)">' + fmtShort(num(p.cur_lmts)) + "</td>" +
+      (useLiveCols
+        ? '<td class="live-val col-sep">' + fmtUsd(p._lu) + "</td>" +
+          '<td class="live-dim">' + fmtShort(p._ll) + "</td>" +
+          '<td class="' + (p._li ? "inrange" : "outrange") + '">' + (p._li ? "● IN" : "○ OUT") + "</td>" +
+          '<td class="live-val" style="font-weight:500">' + fmtUsd(p._lv) + "</td>"
+        : '<td style="font-weight:500">' + fmtUsd(snapVal) + "</td>") ;
+    body.appendChild(tr);
+  });
+}
+
+// ── HTML SKELETON ─────────────────────────────────────────
+function buildHTML(cfg) {
+  return (
+    '<div class="cards">' +
+      '<div class="card"><div class="label">Current Price <span class="live-badge" style="padding:1px 5px;font-size:8px"><span class="dot"></span>live</span></div><div class="value accent" id="price">—</div></div>' +
+      '<div class="card"><div class="label">Open Positions</div><div class="value" id="openPositions">—</div></div>' +
+      '<div class="card"><div class="label">Our Value (USD)</div><div class="value" id="ourValueUsd">—</div></div>' +
+      '<div class="card"><div class="label">External Value (USD)</div><div class="value" id="extValueUsd">—</div></div>' +
+    '</div>' +
+    '<div class="panel">' +
+      '<div class="panel-title">Liquidity Distribution <span class="pill">' + cfg.name + ' · USD/LMTS</span></div>' +
+      '<div class="chart-wrap" style="height:360px"><canvas id="liqChart"></canvas></div>' +
+    '</div>' +
+    '<div class="grid">' +
+      '<div class="panel">' +
+        '<div class="panel-title">Price History <span class="pill">LMTS / USD</span></div>' +
+        '<div class="chart-wrap" style="height:300px"><canvas id="priceChart"></canvas></div>' +
+      '</div>' +
+      '<div class="panel">' +
+        '<div class="panel-title">Current Snapshot <span class="pill">' + cfg.name + '</span></div>' +
+        '<table class="mini-table">' +
+          '<tr><th>Our USDC</th><td class="green" id="ourUsdc">—</td></tr>' +
+          '<tr><th>Our LMTS</th><td class="green" id="ourLmts">—</td></tr>' +
+          '<tr><th>Ext USDC</th><td class="blue" id="extUsdc">—</td></tr>' +
+          '<tr><th>Ext LMTS</th><td class="blue" id="extLmts">—</td></tr>' +
+          '<tr><th>Unique Owners</th><td id="owners">—</td></tr>' +
+          '<tr><th>In-Range</th><td class="accent" id="inRange">—</td></tr>' +
+          '<tr><th>Our Positions</th><td id="ourPos">—</td></tr>' +
+          '<tr><th>Current Tick</th><td id="tick">—</td></tr>' +
+        '</table>' +
+      '</div>' +
+    '</div>' +
+    '<div class="panel">' +
+      '<div class="panel-title">Open Positions <span class="pill">' + cfg.name + '</span>' +
+        (cfg.hasLive ? '<span class="pill-live">&#9889; Live from Sheets</span>' : '') +
+        '<span class="live-ts" id="liveTs"></span>' +
+      '</div>' +
+      '<div class="table-wrap">' +
+        '<table class="pos-table">' +
+          '<thead id="posHead"><tr>' +
+            '<th>Token ID</th><th>Label</th><th>Price Range</th><th>Snapshot In Range</th>' +
+            '<th>Snapshot USDC</th><th>Snapshot LMTS</th><th>Value USD</th>' +
+          '</tr></thead>' +
+          '<tbody id="posBody"></tbody>' +
+        '</table>' +
+      '</div>' +
+    '</div>'
+  );
+}
+
+// ── CHARTS ────────────────────────────────────────────────
+function buildLiqChart(cfg, buckets) {
+  const labels = buckets.map(r => num(r.price_lower_usd_per_lmts));
+  const ourLiq = buckets.map(r => num(r.our_liquidity));
+  const extLiq = buckets.map(r => num(r.ext_liquidity));
   charts.liq = new Chart(document.getElementById("liqChart"), {
     type: "bar",
-    data: {
-      labels,
-      datasets: [
-        { label:"Our liquidity",      data:ourLiq, backgroundColor:cfg.barOur, borderColor:cfg.barOurB, borderWidth:1, barPercentage:1, categoryPercentage:1, borderRadius:0 },
-        { label:"External liquidity", data:extLiq, backgroundColor:cfg.barExt, borderColor:cfg.barExtB, borderWidth:1, barPercentage:1, categoryPercentage:1, borderRadius:0 }
-      ]
-    },
+    data: { labels, datasets: [
+      { label:"Our liquidity",      data:ourLiq, backgroundColor:cfg.barOur, borderColor:cfg.barOurB, borderWidth:1, barPercentage:1, categoryPercentage:1, borderRadius:0 },
+      { label:"External liquidity", data:extLiq, backgroundColor:cfg.barExt, borderColor:cfg.barExtB, borderWidth:1, barPercentage:1, categoryPercentage:1, borderRadius:0 }
+    ]},
     options: {
       responsive:true, maintainAspectRatio:false,
       interaction:{ mode:"index", intersect:false },
       scales: {
-        x: {
-          grid:  { color:"rgba(255,255,255,0.03)" },
-          ticks: { color:"#6a7a8e", maxRotation:45, minRotation:45,
-            callback(val) {
-              const v = Number(this.getLabelForValue(val));
-              return "$" + v.toFixed(2);
-            }
-          },
-          title: { display:true, text:"Price USD / LMTS", color:"#6a7a8e", font:{size:9} }
-        },
-        y: {
-          grid:  { color:"rgba(255,255,255,0.04)" },
-          ticks: { color:"#6a7a8e", callback: v => fmtShort(Number(v)) }
-        }
+        x: { grid:{color:"rgba(255,255,255,0.03)"}, ticks:{color:"#6a7a8e", maxRotation:45, minRotation:45, callback(v){ return "$"+Number(this.getLabelForValue(v)).toFixed(2); }}, title:{display:true,text:"Price USD / LMTS",color:"#6a7a8e",font:{size:9}} },
+        y: { grid:{color:"rgba(255,255,255,0.04)"}, ticks:{color:"#6a7a8e", callback:v=>fmtShort(Number(v))} }
       },
       plugins: {
         legend: { labels:{ color:"#c8d4e0", boxWidth:12, boxHeight:9, font:{size:11} } },
-        tooltip: {
-          backgroundColor:"rgba(9,13,19,0.97)",
-          borderColor:"rgba(255,255,255,0.07)", borderWidth:1,
-          titleColor:"#fff", bodyColor:"#c8d4e0", padding:12,
+        tooltip: { backgroundColor:"rgba(9,13,19,0.97)", borderColor:"rgba(255,255,255,0.07)", borderWidth:1, titleColor:"#fff", bodyColor:"#c8d4e0", padding:12,
           callbacks: {
-            title: items => `$${Number(items[0].label).toFixed(4)} – $${(Number(items[0].label)+0.01).toFixed(4)}`,
-            label: ctx  => `${ctx.dataset.label}: ${fmtShort(num(ctx.raw))}`
+            title: items => "$"+Number(items[0].label).toFixed(4)+" – $"+(Number(items[0].label)+0.01).toFixed(4),
+            label:  ctx  => ctx.dataset.label+": "+fmtShort(num(ctx.raw))
           }
         }
       }
@@ -645,79 +759,30 @@ function buildLiqChart(cfg, buckets) {
   });
 }
 
-// ── PRICE CHART ───────────────────────────────────────────
 function buildPriceChart(cfg, snapshots) {
   const labels = snapshots.map(r => r.timestamp_utc);
   const prices = snapshots.map(r => num(r.price_usd_per_lmts));
-
   charts.price = new Chart(document.getElementById("priceChart"), {
     type: "line",
-    data: {
-      labels,
-      datasets: [{
-        label:"Price USD / LMTS",
-        data: prices,
-        borderColor: cfg.lineColor,
-        backgroundColor: cfg.lineFill,
-        tension: 0.25,
-        pointRadius: 2,
-        pointHoverRadius: 4,
-        fill: true,
-        borderWidth: 2,
-      }]
-    },
+    data: { labels, datasets: [{ label:"Price USD / LMTS", data:prices, borderColor:cfg.lineColor, backgroundColor:cfg.lineFill, tension:0.25, pointRadius:2, pointHoverRadius:4, fill:true, borderWidth:2 }] },
     options: {
       responsive:true, maintainAspectRatio:false,
       interaction:{ mode:"index", intersect:false },
       scales: {
         x: { grid:{color:"rgba(255,255,255,0.03)"}, ticks:{color:"#6a7a8e", maxTicksLimit:6} },
-        y: { grid:{color:"rgba(255,255,255,0.04)"}, ticks:{color:"#6a7a8e", callback: v => fmtPrice(Number(v))} }
+        y: { grid:{color:"rgba(255,255,255,0.04)"}, ticks:{color:"#6a7a8e", callback:v=>fmtPrice(Number(v))} }
       },
       plugins: {
         legend: { labels:{ color:"#c8d4e0" } },
-        tooltip: {
-          backgroundColor:"rgba(9,13,19,0.97)",
-          borderColor:"rgba(255,255,255,0.07)", borderWidth:1,
-          titleColor:"#fff", bodyColor:"#c8d4e0", padding:12,
-          callbacks: { label: ctx => `Price: ${fmtPrice(num(ctx.raw))}` }
+        tooltip: { backgroundColor:"rgba(9,13,19,0.97)", borderColor:"rgba(255,255,255,0.07)", borderWidth:1, titleColor:"#fff", bodyColor:"#c8d4e0", padding:12,
+          callbacks: { label: ctx => "Price: "+fmtPrice(num(ctx.raw)) }
         }
       }
     }
   });
 }
 
-// ── POSITIONS TABLE ──────────────────────────────────────
-function buildPositionsTable(positions, currentPrice) {
-  const body = document.getElementById("posBody");
-  if (!body) return;
-
-  positions
-    .map(p => ({ ...p, _val: num(p.cur_usdc) + num(p.cur_lmts) * currentPrice }))
-    .sort((a,b) => b._val - a._val)
-    .forEach(p => {
-      const isOurs   = p.type === "ours";
-      const isInRange = String(p.in_range).toUpperCase() === "TRUE";
-      const lo = Number(p.price_lower_usd_per_lmts);
-      const hi = Number(p.price_upper_usd_per_lmts);
-      const range = (isFinite(lo) && isFinite(hi))
-        ? `$${lo.toFixed(4)} – $${hi.toFixed(4)}`
-        : `${p.tick_lower ?? "—"} – ${p.tick_upper ?? "—"}`;
-
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td style="color:var(--muted);font-size:10px">${p.token_id || "—"}</td>
-        <td><span class="tag ${isOurs ? "tag-ours" : "tag-ext"}">${p.label || p.type || "ext"}</span></td>
-        <td style="color:var(--muted);font-size:10px">${range}</td>
-        <td class="${isInRange ? "inrange" : "outrange"}">${isInRange ? "● IN" : "○ OUT"}</td>
-        <td>${fmtUsd(num(p.cur_usdc))}</td>
-        <td>${fmtShort(num(p.cur_lmts))}</td>
-        <td style="font-weight:500">${fmtUsd(p._val)}</td>
-      `;
-      body.appendChild(tr);
-    });
-}
-
-// ── INIT ─────────────────────────────────────────────────
+// ── INIT ──────────────────────────────────────────────────
 applyTheme(POOLS[activePool]);
 renderDash(POOLS[activePool]);
 </script>
