@@ -72,6 +72,38 @@
       letter-spacing: 0.1em;
       text-transform: uppercase;
     }
+    .header-right {
+       display: flex;
+       flex-direction: column;
+       align-items: flex-end;
+       gap: 8px;
+     }
+
+     .nav-link {
+       font-family: 'DM Mono', monospace;
+       font-size: 11px;
+       padding: 8px 18px;
+       border: 1px solid var(--border);
+       border-radius: 8px;
+       background: var(--panel);
+       color: var(--muted);
+       text-decoration: none;
+       letter-spacing: 0.05em;
+       transition: background 0.18s, color 0.18s, border-color 0.18s;
+     }
+
+     .nav-link:hover {
+       color: var(--pool-accent);
+       border-color: var(--pool-accent);
+       background: var(--pool-accent-dim);
+     }
+
+    @media (max-width: 640px) {
+     .header-right { align-items: flex-start; }
+     }
+
+
+    
     .switcher {
       display: flex;
       background: var(--panel);
@@ -356,17 +388,14 @@
       <h1>LMTS / USDC&nbsp;<span class="accent" id="headerPoolName">UniV3</span></h1>
       <div class="subtitle" id="headerSubtitle">Uniswap V3 · Base Network · LP Position Tracker</div>
     </div>
-    <div class="switcher">
-      <button id="btnUni"  class="active" onclick="switchPool('uni')">&#x2B21; UniV3</button>
-      <button id="btnAero"             onclick="switchPool('aero')">&#x25C8; Aerodrome</button>
-    </div>
+    <div class="header-right">
+  <div class="switcher">
+    <button id="btnUni"  class="active" onclick="switchPool('uni')">&#x2B21; UniV3</button>
+    <button id="btnAero"             onclick="switchPool('aero')">&#x25C8; Aerodrome</button>
   </div>
-<a href="simulator.html" style="
-  font-family:'DM Mono',monospace;font-size:11px;
-  padding:8px 18px;border:1px solid var(--border);border-radius:8px;
-  background:var(--panel);color:var(--muted);text-decoration:none;
-  letter-spacing:0.05em;align-self:center;margin-left:8px;
-">⚡ Simulator →</a>
+
+  <a href="simulator.html" class="nav-link">⚡ Simulator →</a>
+</div>
   
   <div class="status-bar">
     <div class="status-dot"></div>
