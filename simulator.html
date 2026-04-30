@@ -1,0 +1,734 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>LMTS LP Impact Simulator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Outfit:wght@700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  :root {
+    --bg: #07090d;
+    --panel: #0d1117;
+    --border: #1c2433;
+    --text: #e8eef5;
+    --muted: #6a7a8e;
+    --green: #39ff9a;
+    --green-dim: rgba(57,255,154,0.1);
+    --blue: #4da6ff;
+    --blue-dim: rgba(77,166,255,0.1);
+    --pool-accent: #c084fc;
+    --pool-accent-dim: rgba(192,132,252,0.12);
+    --danger: #ff5566;
+    --warning: #ffaa44;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Mono', monospace;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-variant-numeric: tabular-nums;
+  }
+  .wrap { max-width: 1440px; margin: 0 auto; padding: 28px 20px 60px; }
+  h1 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-bottom: 6px;
+  }
+  h1 .accent { color: var(--pool-accent); }
+  .subtitle {
+    font-size: 10px; color: var(--muted);
+    letter-spacing: 0.1em; text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+  .switcher {
+    display: inline-flex; background: var(--panel);
+    border: 1px solid var(--border); border-radius: 10px;
+    padding: 4px; gap: 4px; margin-bottom: 18px;
+  }
+  .switcher button {
+    font-family: 'DM Mono', monospace; font-size: 11px;
+    padding: 8px 18px; border: none; border-radius: 7px;
+    background: transparent; color: var(--muted);
+    cursor: pointer; letter-spacing: 0.05em;
+  }
+  .switcher button.active {
+    background: var(--pool-accent-dim); color: var(--pool-accent);
+  }
+  .panel {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 12px; padding: 18px 20px; margin-bottom: 14px;
+    position: relative;
+  }
+  .panel::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent 5%, var(--pool-accent) 50%, transparent 95%);
+    opacity: 0.5;
+  }
+  .panel-title {
+    font-family: 'Outfit', sans-serif; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--muted); margin-bottom: 14px;
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  }
+  .panel-title .pill {
+    font-family: 'DM Mono', monospace; font-size: 9px;
+    padding: 2px 8px; border-radius: 4px;
+    background: var(--pool-accent-dim); color: var(--pool-accent);
+    letter-spacing: 0.06em; font-weight: 400;
+  }
+  .controls {
+    display: grid; grid-template-columns: 1fr 1fr 1fr auto;
+    gap: 12px; align-items: end;
+  }
+  .control label {
+    display: block; font-size: 9px; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px;
+  }
+  .control input, .control select {
+    width: 100%; font-family: 'DM Mono', monospace; font-size: 13px;
+    background: #0a0e14; color: var(--text);
+    border: 1px solid var(--border); border-radius: 8px;
+    padding: 10px 12px;
+  }
+  .control input:focus, .control select:focus {
+    outline: none; border-color: var(--pool-accent);
+  }
+  button.simulate {
+    font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 500;
+    padding: 11px 22px; border-radius: 8px; cursor: pointer;
+    background: var(--pool-accent-dim); color: var(--pool-accent);
+    border: 1px solid var(--pool-accent);
+    letter-spacing: 0.05em;
+    transition: background 0.15s;
+  }
+  button.simulate:hover { background: rgba(192,132,252,0.22); }
+  button.simulate:disabled { opacity: 0.4; cursor: wait; }
+  .quick {
+    display: flex; gap: 6px; margin-top: 12px; flex-wrap: wrap;
+  }
+  .quick button {
+    font-family: 'DM Mono', monospace; font-size: 10px;
+    padding: 5px 10px; border: 1px solid var(--border); border-radius: 5px;
+    background: transparent; color: var(--muted); cursor: pointer;
+    letter-spacing: 0.04em;
+  }
+  .quick button:hover { color: var(--text); border-color: var(--pool-accent); }
+  .results {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+    margin-top: 14px;
+  }
+  .scenario {
+    background: #0a0e14; border: 1px solid var(--border);
+    border-radius: 10px; padding: 18px;
+  }
+  .scenario.a { border-left: 3px solid var(--blue); }
+  .scenario.b { border-left: 3px solid var(--green); }
+  .scenario .label {
+    font-size: 10px; color: var(--muted);
+    letter-spacing: 0.12em; text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .scenario .name {
+    font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 14px;
+    margin-bottom: 14px; letter-spacing: -0.01em;
+  }
+  .scenario.a .name { color: var(--blue); }
+  .scenario.b .name { color: var(--green); }
+  .scenario .row {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 7px 0; border-bottom: 1px solid rgba(28,36,51,0.6);
+    font-size: 12px;
+  }
+  .scenario .row:last-child { border: none; }
+  .scenario .row .k { color: var(--muted); font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.08em; }
+  .scenario .row .v { font-weight: 500; font-family: 'DM Mono', monospace; }
+  .scenario .big {
+    font-size: 22px; font-weight: 500;
+    margin: 8px 0 14px;
+  }
+  .scenario.a .big { color: var(--blue); }
+  .scenario.b .big { color: var(--green); }
+
+  .insight {
+    margin-top: 14px;
+    padding: 16px 18px;
+    background: rgba(192,132,252,0.06);
+    border: 1px solid rgba(192,132,252,0.2);
+    border-radius: 10px;
+  }
+  .insight .head {
+    font-family: 'Outfit', sans-serif;
+    font-size: 11px; font-weight: 700; color: var(--pool-accent);
+    text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 8px;
+  }
+  .insight .body { font-size: 12px; line-height: 1.6; color: var(--text); }
+  .insight .number {
+    color: var(--pool-accent); font-weight: 500;
+  }
+
+  table.segs {
+    width: 100%; border-collapse: collapse;
+    font-size: 11px;
+  }
+  table.segs th, table.segs td {
+    padding: 8px 12px; text-align: left;
+    border-bottom: 1px solid rgba(28,36,51,0.5);
+    font-variant-numeric: tabular-nums; white-space: nowrap;
+  }
+  table.segs th {
+    color: var(--muted); font-weight: 500; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    position: sticky; top: 0; background: #0d1117;
+  }
+  .segs td.dom-high { color: var(--green); font-weight: 500; }
+  .segs td.dom-mid  { color: var(--warning); }
+  .table-wrap { max-height: 360px; overflow: auto; border-radius: 8px; }
+  .table-wrap::-webkit-scrollbar { width: 4px; height: 4px; }
+  .table-wrap::-webkit-scrollbar-thumb { background: #2a3a52; border-radius: 4px; }
+
+  .chart-wrap { position: relative; height: 280px; }
+
+  .status-bar {
+    display: flex; gap: 10px; align-items: center;
+    font-size: 10px; color: var(--muted);
+    letter-spacing: 0.06em; margin-bottom: 18px;
+  }
+  .status-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--green); box-shadow: 0 0 6px var(--green);
+  }
+  .err {
+    color: var(--danger); font-size: 11px;
+    padding: 12px 14px; background: rgba(255,85,102,0.07);
+    border: 1px solid rgba(255,85,102,0.18); border-radius: 8px;
+  }
+  .loading {
+    display: flex; align-items: center; gap: 10px;
+    color: var(--muted); font-size: 11px;
+    padding: 20px; justify-content: center;
+  }
+  .spinner {
+    width: 18px; height: 18px;
+    border: 2px solid var(--border);
+    border-top-color: var(--pool-accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  @media (max-width: 900px) {
+    .controls { grid-template-columns: 1fr 1fr; }
+    .results { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>LP Impact <span class="accent">Simulator</span></h1>
+  <div class="subtitle">CLMM Swap Simulation · Our LP vs External LP · USDC/LMTS on Base</div>
+
+  <div class="switcher">
+    <button id="btnUni"  onclick="switchPool('uni')">⬡ UniV3</button>
+    <button id="btnAero" class="active" onclick="switchPool('aero')">◈ Aerodrome</button>
+  </div>
+
+  <div class="status-bar">
+    <div class="status-dot"></div>
+    <span id="dataStatus">Loading positions…</span>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Simulation Inputs <span class="pill" id="poolPill">Aerodrome</span></div>
+    <div class="controls">
+      <div class="control">
+        <label>Current price (USD/LMTS)</label>
+        <input id="curPrice" type="number" step="0.001" value="0.07" />
+      </div>
+      <div class="control">
+        <label>Target price (USD/LMTS)</label>
+        <input id="tgtPrice" type="number" step="0.001" value="0.05" />
+      </div>
+      <div class="control">
+        <label>Mode</label>
+        <select id="mode">
+          <option value="both">Both A vs B</option>
+          <option value="external">External only (A)</option>
+          <option value="full">Full pool (B)</option>
+        </select>
+      </div>
+      <button class="simulate" onclick="runSim()">Simulate</button>
+    </div>
+    <div class="quick">
+      <span style="font-size:9px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;align-self:center;margin-right:4px">Quick:</span>
+      <button onclick="quickSet(0.07,0.06)">−14%</button>
+      <button onclick="quickSet(0.07,0.05)">−29%</button>
+      <button onclick="quickSet(0.07,0.04)">−43%</button>
+      <button onclick="quickSet(0.07,0.08)">+14%</button>
+      <button onclick="quickSet(0.07,0.10)">+43%</button>
+      <button onclick="useLivePrice()">⚡ use live</button>
+    </div>
+  </div>
+
+  <div id="output"></div>
+</div>
+
+<script>
+// ============================================================
+// CONFIG
+// ============================================================
+const POOLS = {
+  uni:  { sheetId: "1oJf881yq6bhUSlLBvuiG8n_hj2pWvPO-7lvis0eKXVs", tab: "positions",      name: "UniV3",      pair: "0x9e4a0e8df94a2b80af6a3a6e8a2fa4b3c4e9ffc5" },
+  aero: { sheetId: "14zlvfkLX8Hs3_duak9ID0BGsLfyIVJ_UZ9MOP9lY-oE", tab: "aero_positions", name: "Aerodrome",  pair: "0xbe4C36B9542610dF83Ca690c8b5BC53BbbC5d542" },
+};
+const DEC0 = 6n,  DEC1 = 18n;
+const SCALE_DEC0 = 10n ** DEC0;
+const SCALE_DEC1 = 10n ** DEC1;
+
+let activePool = "aero";
+let positions  = null;
+let livePrice  = null;
+
+// ============================================================
+// DATA LOADING
+// ============================================================
+async function loadPositions() {
+  const cfg = POOLS[activePool];
+  const url = `https://opensheet.elk.sh/${cfg.sheetId}/${cfg.tab}`;
+  document.getElementById("dataStatus").textContent = `Loading ${cfg.name} positions…`;
+  const r = await fetch(url);
+  if (!r.ok) throw new Error("HTTP " + r.status);
+  const rows = await r.json();
+  positions = rows.map(r => {
+    const liqStr = String(r.liquidity || "0").trim().split(".")[0];
+    return {
+      tokenId:   r.token_id || "",
+      label:     r.label || "",
+      isOurs:    String(r.type || "").toLowerCase() === "ours",
+      tickLower: parseInt(r.tick_lower),
+      tickUpper: parseInt(r.tick_upper),
+      liquidity: BigInt(liqStr || "0"),
+    };
+  }).filter(p => p.liquidity > 0n && Number.isFinite(p.tickLower) && Number.isFinite(p.tickUpper));
+
+  const ours = positions.filter(p => p.isOurs).length;
+  document.getElementById("dataStatus").textContent =
+    `${cfg.name} · ${positions.length} positions (${ours} ours) loaded`;
+}
+
+async function loadLivePrice() {
+  try {
+    const cfg = POOLS[activePool];
+    const r = await fetch(`https://api.dexscreener.com/latest/dex/pairs/base/${cfg.pair}`);
+    const data = await r.json();
+    livePrice = data?.pair?.priceUsd ? parseFloat(data.pair.priceUsd) : null;
+  } catch(e) { livePrice = null; }
+}
+
+// ============================================================
+// PRICE / TICK / SQRT MATH
+// ============================================================
+// We use BigInt for L and integer math; floats for log-based tick conversion.
+// Q96 sqrt prices we keep as BigInt where possible.
+
+const Q96  = 2n ** 96n;
+const Q96f = Math.pow(2, 96);
+
+// price USD/LMTS -> sqrt price (BigInt, scale Q96)
+function priceToSqrtPriceX96(priceUsdPerLmts) {
+  // raw_ratio = (1/price) * 10^(dec1 - dec0) = (1/price) * 1e12
+  const rawRatio = (1 / priceUsdPerLmts) * 1e12;
+  const sqrtRaw = Math.sqrt(rawRatio);
+  // Multiply by 2^96 with float precision is sufficient (we round to BigInt).
+  // For high precision near boundary, errors are negligible vs L ~ 10^18+.
+  return BigInt(Math.round(sqrtRaw * Q96f));
+}
+function sqrtPriceX96ToPrice(sqrtPx96 /* BigInt */) {
+  const f = Number(sqrtPx96) / Q96f;
+  const rawRatio = f * f;
+  if (rawRatio === 0) return 0;
+  return 1e12 / rawRatio;
+}
+function priceToTick(priceUsdPerLmts) {
+  // 1.0001^tick = 1e12 / price
+  return Math.floor(Math.log(1e12 / priceUsdPerLmts) / Math.log(1.0001));
+}
+function tickToSqrtPriceX96(tick) {
+  return BigInt(Math.round(Math.pow(1.0001, tick / 2) * Q96f));
+}
+
+// ============================================================
+// TICK MAP / ACTIVE L
+// ============================================================
+function buildTickMap(includeOurs) {
+  const m = new Map();
+  for (const p of positions) {
+    if (!includeOurs && p.isOurs) continue;
+    m.set(p.tickLower, (m.get(p.tickLower) || 0n) + p.liquidity);
+    m.set(p.tickUpper, (m.get(p.tickUpper) || 0n) - p.liquidity);
+  }
+  return m;
+}
+function activeLAtTick(tick, includeOurs) {
+  let L = 0n;
+  for (const p of positions) {
+    if (!includeOurs && p.isOurs) continue;
+    if (p.tickLower <= tick && tick < p.tickUpper) L += p.liquidity;
+  }
+  return L;
+}
+function activeOursAtTick(tick) {
+  let L = 0n;
+  for (const p of positions) {
+    if (p.isOurs && p.tickLower <= tick && tick < p.tickUpper) L += p.liquidity;
+  }
+  return L;
+}
+
+// ============================================================
+// SWAP SIM
+// ============================================================
+function simulate(currentPrice, targetPrice, includeOurs) {
+  const curTick = priceToTick(currentPrice);
+  const tgtTick = priceToTick(targetPrice);
+  const direction = targetPrice < currentPrice ? "down"
+                  : targetPrice > currentPrice ? "up" : "none";
+  const ascending = direction === "down";  // sqrt UP when price USD/LMTS DOWN
+
+  const sqrtPCur = priceToSqrtPriceX96(currentPrice);
+  const sqrtPTgt = priceToSqrtPriceX96(targetPrice);
+
+  const res = {
+    direction, mode: includeOurs ? "full" : "external",
+    currentPrice, targetPrice, curTick, tgtTick,
+    usdcIn: 0, usdcOut: 0, lmtsIn: 0, lmtsOut: 0,
+    segments: [],
+  };
+  if (direction === "none") return res;
+
+  const tickMap = buildTickMap(includeOurs);
+  const boundaryTicks = [...tickMap.keys()].sort((a,b) => a - b);
+
+  let L = activeLAtTick(curTick, includeOurs);
+  let sqrtP = sqrtPCur;
+
+  if (ascending) {
+    const relevant = boundaryTicks.filter(t => t > curTick);
+    let done = false;
+    for (const tNext of relevant) {
+      if (tNext > tgtTick) {
+        consume(res, sqrtP, sqrtPTgt, L, tickFromSqrt(sqrtP), tgtTick, true, includeOurs);
+        done = true; break;
+      }
+      const sqrtTNext = tickToSqrtPriceX96(tNext);
+      consume(res, sqrtP, sqrtTNext, L, tickFromSqrt(sqrtP), tNext, true, includeOurs);
+      sqrtP = sqrtTNext;
+      L += tickMap.get(tNext) || 0n;
+      if (tNext === tgtTick) { done = true; break; }
+    }
+    if (!done && sqrtP < sqrtPTgt) {
+      consume(res, sqrtP, sqrtPTgt, L, tickFromSqrt(sqrtP), tgtTick, true, includeOurs);
+    }
+  } else {
+    const relevant = boundaryTicks.filter(t => t <= curTick).reverse();
+    let done = false;
+    for (const tNext of relevant) {
+      if (tNext < tgtTick) {
+        consume(res, sqrtP, sqrtPTgt, L, tickFromSqrt(sqrtP), tgtTick, false, includeOurs);
+        done = true; break;
+      }
+      const sqrtTNext = tickToSqrtPriceX96(tNext);
+      if (sqrtTNext >= sqrtP) continue;
+      consume(res, sqrtP, sqrtTNext, L, tickFromSqrt(sqrtP), tNext, false, includeOurs);
+      sqrtP = sqrtTNext;
+      L -= tickMap.get(tNext) || 0n;
+      if (tNext === tgtTick) { done = true; break; }
+    }
+    if (!done && sqrtP > sqrtPTgt) {
+      consume(res, sqrtP, sqrtPTgt, L, tickFromSqrt(sqrtP), tgtTick, false, includeOurs);
+    }
+  }
+
+  return res;
+}
+
+function tickFromSqrt(sqrtPx96) {
+  const r = Number(sqrtPx96) / Q96f;
+  if (r <= 0) return 0;
+  return Math.floor(2 * Math.log(r) / Math.log(1.0001));
+}
+
+function consume(res, sqrtA, sqrtB, L, tickStart, tickEnd, ascending, includeOurs) {
+  const pLo = sqrtA < sqrtB ? sqrtA : sqrtB;
+  const pHi = sqrtA < sqrtB ? sqrtB : sqrtA;
+
+  let dUsdc = 0, dLmts = 0;
+  if (L > 0n && sqrtA !== sqrtB) {
+    // Δx_raw = L * (pHi - pLo) * Q96 / (pLo * pHi)
+    // Δy_raw = L * (pHi - pLo) / Q96
+    const diff = pHi - pLo;
+    // Use BigInt multiplication carefully — sqrt prices are ~ Q96 magnitude (~2^96 ~ 7.9e28),
+    // L is ~ 10^18-10^21. Products fit in BigInt.
+    const dxRaw = (L * diff * Q96) / (pLo * pHi);
+    const dyRaw = (L * diff) / Q96;
+    dUsdc = Number(dxRaw) / Number(SCALE_DEC0);
+    dLmts = Number(dyRaw) / Number(SCALE_DEC1);
+
+    if (ascending) {
+      res.lmtsIn  += dLmts;
+      res.usdcOut += dUsdc;
+    } else {
+      res.usdcIn += dUsdc;
+      res.lmtsOut += dLmts;
+    }
+  }
+
+  const ourL = includeOurs ? activeOursAtTick(tickStart) : 0n;
+  res.segments.push({
+    tickStart, tickEnd,
+    priceStart: sqrtPriceX96ToPrice(sqrtA),
+    priceEnd:   sqrtPriceX96ToPrice(sqrtB),
+    L, ourL,
+    deltaUsdc: dUsdc,
+    deltaLmts: dLmts,
+  });
+}
+
+function inputHuman(sim)  { return sim.direction === "down" ? sim.lmtsIn  : sim.usdcIn;  }
+function outputHuman(sim) { return sim.direction === "down" ? sim.usdcOut : sim.lmtsOut; }
+function inputSym(sim)    { return sim.direction === "down" ? "LMTS" : "USDC"; }
+function outputSym(sim)   { return sim.direction === "down" ? "USDC" : "LMTS"; }
+
+// ============================================================
+// RENDER
+// ============================================================
+function fmtNum(v, places = 2) {
+  if (!isFinite(v)) return "—";
+  return v.toLocaleString("en-US", { minimumFractionDigits: places, maximumFractionDigits: places });
+}
+function fmtShort(v) {
+  if (!isFinite(v)) return "—";
+  const a = Math.abs(v);
+  if (a >= 1e6) return (v/1e6).toFixed(2) + "M";
+  if (a >= 1e3) return (v/1e3).toFixed(2) + "K";
+  return v.toFixed(2);
+}
+function fmtPrice(v)  { return "$" + v.toLocaleString("en-US", { minimumFractionDigits: 4, maximumFractionDigits: 6 }); }
+
+function quickSet(cur, tgt) {
+  document.getElementById("curPrice").value = cur;
+  document.getElementById("tgtPrice").value = tgt;
+  runSim();
+}
+function useLivePrice() {
+  if (livePrice) {
+    document.getElementById("curPrice").value = livePrice.toFixed(6);
+    runSim();
+  }
+}
+
+let chart = null;
+
+function runSim() {
+  const out = document.getElementById("output");
+  if (!positions) {
+    out.innerHTML = '<div class="err">Positions not loaded yet.</div>';
+    return;
+  }
+  const cur = parseFloat(document.getElementById("curPrice").value);
+  const tgt = parseFloat(document.getElementById("tgtPrice").value);
+  if (!cur || !tgt || cur <= 0 || tgt <= 0) {
+    out.innerHTML = '<div class="err">Enter valid positive prices.</div>';
+    return;
+  }
+  if (cur === tgt) {
+    out.innerHTML = '<div class="err">Current and target prices are equal — nothing to simulate.</div>';
+    return;
+  }
+
+  const simExt  = simulate(cur, tgt, false);
+  const simFull = simulate(cur, tgt, true);
+
+  const inExt  = inputHuman(simExt);
+  const inFull = inputHuman(simFull);
+  const contrib = inFull - inExt;
+  const sym = inputSym(simFull);
+  const ratioPct = inExt > 0 ? (contrib / inExt * 100) : Infinity;
+
+  // Top dominance segments
+  const ranked = simFull.segments
+    .filter(s => s.L > 0n)
+    .map(s => ({
+      ...s,
+      ourPct: Number(s.ourL) / Number(s.L) * 100,
+      cost: simFull.direction === "down" ? s.deltaLmts : s.deltaUsdc,
+    }))
+    .sort((a,b) => b.ourPct - a.ourPct || b.cost - a.cost);
+
+  const critical = ranked.filter(r => r.ourPct >= 50);
+
+  out.innerHTML = `
+    <div class="panel">
+      <div class="panel-title">Scenario Comparison
+        <span class="pill">${simFull.direction.toUpperCase()} · tick ${simFull.curTick} → ${simFull.tgtTick}</span>
+      </div>
+      <div class="results">
+        <div class="scenario a">
+          <div class="label">Scenario A</div>
+          <div class="name">External liquidity only</div>
+          <div class="big">${fmtNum(inExt, 2)} <span style="font-size:13px;color:var(--muted)">${sym}</span></div>
+          <div class="row"><span class="k">Output received</span><span class="v">${fmtNum(outputHuman(simExt), 2)} ${outputSym(simExt)}</span></div>
+          <div class="row"><span class="k">Segments traversed</span><span class="v">${simExt.segments.length}</span></div>
+          <div class="row"><span class="k">Effective price</span><span class="v">${
+            outputHuman(simExt) > 0 ? fmtPrice(simExt.direction === "down" ? outputHuman(simExt)/inExt : inExt/outputHuman(simExt)) : "—"
+          }</span></div>
+        </div>
+        <div class="scenario b">
+          <div class="label">Scenario B</div>
+          <div class="name">Full pool (with our LP)</div>
+          <div class="big">${fmtNum(inFull, 2)} <span style="font-size:13px;color:var(--muted)">${sym}</span></div>
+          <div class="row"><span class="k">Output received</span><span class="v">${fmtNum(outputHuman(simFull), 2)} ${outputSym(simFull)}</span></div>
+          <div class="row"><span class="k">Segments traversed</span><span class="v">${simFull.segments.length}</span></div>
+          <div class="row"><span class="k">Effective price</span><span class="v">${
+            outputHuman(simFull) > 0 ? fmtPrice(simFull.direction === "down" ? outputHuman(simFull)/inFull : inFull/outputHuman(simFull)) : "—"
+          }</span></div>
+        </div>
+      </div>
+
+      <div class="insight">
+        <div class="head">Our liquidity contribution</div>
+        <div class="body">
+          Our LP forces a swapper to spend an extra
+          <span class="number">${fmtNum(contrib, 2)} ${sym}</span>
+          to move price from <span class="number">${fmtPrice(cur)}</span> to <span class="number">${fmtPrice(tgt)}</span>
+          ${isFinite(ratioPct) ? `— a <span class="number">${ratioPct.toFixed(1)}%</span> increase over external-only depth.` : "."}
+          ${critical.length > 0
+            ? `<br><br>Our wallets dominate (>50%) the segments
+               ${critical.slice(0,3).map(r => `<span class="number">${r.priceStart.toFixed(5)}–${r.priceEnd.toFixed(5)}</span>`).join(", ")}.
+               Removing those positions would let price pass these zones with significantly less volume.`
+            : `<br><br>No single segment is >50% held by our wallets — external LPs carry most of the depth on this path.`}
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Liquidity along path
+        <span class="pill">total vs ours</span>
+      </div>
+      <div class="chart-wrap"><canvas id="pathChart"></canvas></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Segment breakdown (top 12 by our-LP %)
+        <span class="pill">full-pool simulation</span>
+      </div>
+      <div class="table-wrap">
+        <table class="segs">
+          <thead><tr>
+            <th>Price range</th><th>Our %</th><th>Total L</th>
+            <th>Cost (${sym})</th><th>Cum. cost</th>
+          </tr></thead>
+          <tbody>
+            ${(() => {
+              let cum = 0;
+              return ranked.slice(0, 12).map(s => {
+                cum += s.cost;
+                const cls = s.ourPct >= 50 ? "dom-high" : s.ourPct >= 25 ? "dom-mid" : "";
+                return `<tr>
+                  <td>${s.priceStart.toFixed(5)} → ${s.priceEnd.toFixed(5)}</td>
+                  <td class="${cls}">${s.ourPct.toFixed(1)}%</td>
+                  <td>${fmtShort(Number(s.L))}</td>
+                  <td>${fmtNum(s.cost, 2)}</td>
+                  <td style="color:var(--muted)">${fmtNum(cum, 2)}</td>
+                </tr>`;
+              }).join("");
+            })()}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+
+  drawPathChart(simFull, sym);
+}
+
+function drawPathChart(simFull, sym) {
+  if (chart) { try { chart.destroy(); } catch(e){} }
+  // For each segment, plot total L and our L on a price axis.
+  const labels = simFull.segments.map(s => s.priceStart.toFixed(5));
+  const totalL = simFull.segments.map(s => Number(s.L));
+  const ourL   = simFull.segments.map(s => Number(s.ourL));
+  const extL   = simFull.segments.map(s => Number(s.L) - Number(s.ourL));
+  const ctx = document.getElementById("pathChart");
+  chart = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels,
+      datasets: [
+        { label:"External L", data:extL, backgroundColor:"rgba(77,166,255,0.5)",
+          borderColor:"rgba(77,166,255,0.9)", borderWidth:1, stack:"L", barPercentage:1, categoryPercentage:1 },
+        { label:"Our L",      data:ourL, backgroundColor:"rgba(57,255,154,0.85)",
+          borderColor:"rgba(57,255,154,1)", borderWidth:1, stack:"L", barPercentage:1, categoryPercentage:1 },
+      ],
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: "index", intersect: false },
+      plugins: {
+        legend: { labels: { color: "#c8d4e0", boxWidth:12, boxHeight:9, font:{size:11} } },
+        tooltip: {
+          backgroundColor:"rgba(9,13,19,0.97)", borderColor:"rgba(255,255,255,0.07)", borderWidth:1,
+          titleColor:"#fff", bodyColor:"#c8d4e0", padding:12,
+          callbacks: {
+            title: items => "Price ~$" + Number(items[0].label).toFixed(5),
+            label: ctx => ctx.dataset.label + ": " + fmtShort(Number(ctx.raw)),
+          },
+        },
+      },
+      scales: {
+        x: { grid: { color:"rgba(255,255,255,0.03)" },
+             ticks: { color:"#6a7a8e", maxRotation:45, minRotation:45,
+                      callback(v) { return "$" + Number(this.getLabelForValue(v)).toFixed(4); } },
+             stacked: true },
+        y: { grid: { color:"rgba(255,255,255,0.04)" },
+             ticks: { color:"#6a7a8e", callback: v => fmtShort(Number(v)) },
+             stacked: true,
+             title: { display: true, text: "Liquidity (raw L)", color:"#6a7a8e", font:{size:9} } },
+      },
+    },
+  });
+}
+
+async function switchPool(p) {
+  if (p === activePool) return;
+  activePool = p;
+  document.getElementById("btnUni").classList.toggle("active",  p === "uni");
+  document.getElementById("btnAero").classList.toggle("active", p === "aero");
+  document.getElementById("poolPill").textContent = POOLS[p].name;
+  document.getElementById("output").innerHTML = '<div class="loading"><div class="spinner"></div>Reloading…</div>';
+  try {
+    await loadPositions();
+    await loadLivePrice();
+    document.getElementById("output").innerHTML = "";
+  } catch(e) {
+    document.getElementById("output").innerHTML = '<div class="err">Failed to load: ' + e.message + '</div>';
+  }
+}
+
+// init
+(async () => {
+  try {
+    await loadPositions();
+    await loadLivePrice();
+  } catch(e) {
+    document.getElementById("output").innerHTML = '<div class="err">Failed to load: ' + e.message + '</div>';
+  }
+})();
+</script>
+</body>
+</html>
