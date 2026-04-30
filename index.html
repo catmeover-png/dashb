@@ -357,21 +357,32 @@
       <div class="subtitle" id="headerSubtitle">Uniswap V3 · Base Network · LP Position Tracker</div>
     </div>
     
-  <div style="display:flex;flex-direction:column;align-items:flex-end;gap:10px">
-      <div class="switcher">
-        <button id="btnUni"  class="active" onclick="switchPool('uni')">&#x2B21; UniV3</button>
-        <button id="btnAero"             onclick="switchPool('aero')">&#x25C8; Aerodrome</button>
-      </div>
-      <a href="simulator.html" style="
-        font-family:'DM Mono',monospace;font-size:11px;
-        padding:8px 18px;border:1px solid var(--border);border-radius:8px;
-        background:var(--panel);color:var(--muted);text-decoration:none;
-        letter-spacing:0.05em;transition:color 0.15s,border-color 0.15s;
-      " onmouseover="this.style.color='var(--pool-accent)';this.style.borderColor='var(--pool-accent)'"
-         onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--border)'">
-        &#9889; Impact Simulator &rarr;
-      </a>
-    </div>
+  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+  
+  <div class="switcher">
+    <button id="btnUni" class="active" onclick="switchPool('uni')">&#x2B21; UniV3</button>
+    <button id="btnAero" onclick="switchPool('aero')">&#x25C8; Aerodrome</button>
+  </div>
+
+  <a href="simulator.html" style="
+    font-family:'DM Mono',monospace;
+    font-size:11px;
+    padding:8px 18px;
+    border:1px solid var(--border);
+    border-radius:8px;
+    background:var(--panel);
+    color:var(--muted);
+    text-decoration:none;
+    letter-spacing:0.05em;
+    transition:color 0.15s,border-color 0.15s,background 0.15s;
+    white-space:nowrap;
+  "
+  onmouseover="this.style.color='var(--pool-accent)';this.style.borderColor='var(--pool-accent)';this.style.background='var(--pool-accent-dim)'"
+  onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--border)';this.style.background='var(--panel)'">
+    &#9889; Impact Simulator &rarr;
+  </a>
+
+</div>
     
 
   <div class="status-bar">
