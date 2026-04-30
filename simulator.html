@@ -18,10 +18,11 @@
     --green-dim: rgba(57,255,154,0.1);
     --blue: #4da6ff;
     --blue-dim: rgba(77,166,255,0.1);
-    --pool-accent: #c084fc;
-    --pool-accent-dim: rgba(192,132,252,0.12);
+    --pool-accent: #00d4aa;
+    --pool-accent-dim: rgba(0,212,170,0.12);
     --danger: #ff5566;
     --warning: #ffaa44;
+    --warning-dim: rgba(255,170,68,0.1);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -41,12 +42,7 @@
     margin-bottom: 18px;
     flex-wrap: wrap;
   }
-  .header-right {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 8px;
-  }
+
   .nav-link {
     font-family: 'DM Mono', monospace;
     font-size: 11px;
@@ -77,20 +73,7 @@
     font-size: 10px; color: var(--muted);
     letter-spacing: 0.1em; text-transform: uppercase;
   }
-  .switcher {
-    display: inline-flex; background: var(--panel);
-    border: 1px solid var(--border); border-radius: 10px;
-    padding: 4px; gap: 4px;
-  }
-  .switcher button {
-    font-family: 'DM Mono', monospace; font-size: 11px;
-    padding: 8px 18px; border: none; border-radius: 7px;
-    background: transparent; color: var(--muted);
-    cursor: pointer; letter-spacing: 0.05em;
-  }
-  .switcher button.active {
-    background: var(--pool-accent-dim); color: var(--pool-accent);
-  }
+
   .panel {
     background: var(--panel); border: 1px solid var(--border);
     border-radius: 12px; padding: 18px 20px; margin-bottom: 14px;
@@ -138,10 +121,15 @@
     letter-spacing: 0.05em;
     transition: background 0.15s;
   }
-  button.simulate:hover { background: rgba(192,132,252,0.22); }
+  button.simulate:hover { background: rgba(0,212,170,0.22); }
   button.simulate:disabled { opacity: 0.4; cursor: wait; }
   .quick {
-    display: flex; gap: 6px; margin-top: 12px; flex-wrap: wrap;
+    display: flex; gap: 6px; margin-top: 12px; flex-wrap: wrap; align-items: center;
+  }
+  .quick-label {
+    font-size: 9px; color: var(--muted);
+    letter-spacing: 0.1em; text-transform: uppercase;
+    margin-right: 4px;
   }
   .quick button {
     font-family: 'DM Mono', monospace; font-size: 10px;
@@ -150,6 +138,15 @@
     letter-spacing: 0.04em;
   }
   .quick button:hover { color: var(--text); border-color: var(--pool-accent); }
+  .quick button.live-btn {
+    color: var(--green);
+    border-color: rgba(57,255,154,0.3);
+  }
+  .quick button.live-btn:hover {
+    border-color: var(--green);
+    background: rgba(57,255,154,0.08);
+  }
+
   .results {
     display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
     margin-top: 14px;
@@ -190,8 +187,8 @@
   .insight {
     margin-top: 14px;
     padding: 16px 18px;
-    background: rgba(192,132,252,0.06);
-    border: 1px solid rgba(192,132,252,0.2);
+    background: rgba(0,212,170,0.06);
+    border: 1px solid rgba(0,212,170,0.2);
     border-radius: 10px;
   }
   .insight .head {
@@ -203,6 +200,23 @@
   .insight .number {
     color: var(--pool-accent); font-weight: 500;
   }
+
+  .warning-box {
+    margin-top: 14px;
+    padding: 14px 16px;
+    background: var(--warning-dim);
+    border: 1px solid rgba(255,170,68,0.3);
+    border-radius: 10px;
+    font-size: 11px;
+    line-height: 1.5;
+  }
+  .warning-box .head {
+    font-family: 'Outfit', sans-serif;
+    font-size: 11px; font-weight: 700; color: var(--warning);
+    text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 6px;
+  }
+  .warning-box .body { color: var(--text); }
+  .warning-box .number { color: var(--warning); font-weight: 500; }
 
   table.segs {
     width: 100%; border-collapse: collapse;
@@ -220,6 +234,7 @@
   }
   .segs td.dom-high { color: var(--green); font-weight: 500; }
   .segs td.dom-mid  { color: var(--warning); }
+  .segs tr.zero-liq td { color: var(--warning); opacity: 0.7; font-style: italic; }
   .table-wrap { max-height: 360px; overflow: auto; border-radius: 8px; }
   .table-wrap::-webkit-scrollbar { width: 4px; height: 4px; }
   .table-wrap::-webkit-scrollbar-thumb { background: #2a3a52; border-radius: 4px; }
@@ -230,10 +245,19 @@
     display: flex; gap: 10px; align-items: center;
     font-size: 10px; color: var(--muted);
     letter-spacing: 0.06em; margin-bottom: 18px;
+    flex-wrap: wrap;
   }
   .status-dot {
     width: 6px; height: 6px; border-radius: 50%;
     background: var(--green); box-shadow: 0 0 6px var(--green);
+  }
+  .live-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 2px 8px; border-radius: 4px;
+    background: rgba(57,255,154,0.08);
+    border: 1px solid rgba(57,255,154,0.2);
+    color: var(--green); font-size: 9px;
+    letter-spacing: 0.1em; text-transform: uppercase;
   }
   .err {
     color: var(--danger); font-size: 11px;
@@ -257,7 +281,6 @@
   @media (max-width: 900px) {
     .controls { grid-template-columns: 1fr 1fr; }
     .results { grid-template-columns: 1fr; }
-    .header-right { align-items: flex-start; }
   }
 </style>
 </head>
@@ -266,34 +289,29 @@
   <div class="header">
     <div>
       <h1>LP Impact <span class="accent">Simulator</span></h1>
-      <div class="subtitle">CLMM Swap Simulation · Our LP vs External LP · USDC/LMTS on Base</div>
+      <div class="subtitle">CLMM Swap Simulation · Our LP vs External · USDC/LMTS · Aerodrome Slipstream</div>
     </div>
-
-    <div class="header-right">
-      <div class="switcher">
-        <button id="btnUni" onclick="switchPool('uni')">⬡ UniV3</button>
-        <button id="btnAero" class="active" onclick="switchPool('aero')">◈ Aerodrome</button>
-      </div>
-
-      <a href="index.html" class="nav-link">← Back to Dashboard</a>
-    </div>
+    <a href="index.html" class="nav-link">← Back to Dashboard</a>
   </div>
 
   <div class="status-bar">
     <div class="status-dot"></div>
     <span id="dataStatus">Loading positions…</span>
+    <span id="livePriceBadge" style="display:none" class="live-badge">
+      live: <span id="livePriceVal">—</span>
+    </span>
   </div>
 
   <div class="panel">
-    <div class="panel-title">Simulation Inputs <span class="pill" id="poolPill">Aerodrome</span></div>
+    <div class="panel-title">Simulation Inputs <span class="pill">Aerodrome</span></div>
     <div class="controls">
       <div class="control">
         <label>Current price (USD/LMTS)</label>
-        <input id="curPrice" type="number" step="0.001" value="0.07" />
+        <input id="curPrice" type="number" step="0.0001" value="0.07" oninput="onCurPriceChange()" />
       </div>
       <div class="control">
         <label>Target price (USD/LMTS)</label>
-        <input id="tgtPrice" type="number" step="0.001" value="0.05" />
+        <input id="tgtPrice" type="number" step="0.0001" value="0.05" />
       </div>
       <div class="control">
         <label>Mode</label>
@@ -306,13 +324,16 @@
       <button class="simulate" onclick="runSim()">Simulate</button>
     </div>
     <div class="quick">
-      <span style="font-size:9px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;align-self:center;margin-right:4px">Quick:</span>
-      <button onclick="quickSet(0.07,0.06)">−14%</button>
-      <button onclick="quickSet(0.07,0.05)">−29%</button>
-      <button onclick="quickSet(0.07,0.04)">−43%</button>
-      <button onclick="quickSet(0.07,0.08)">+14%</button>
-      <button onclick="quickSet(0.07,0.10)">+43%</button>
-      <button onclick="useLivePrice()">⚡ use live</button>
+      <span class="quick-label">Quick from current:</span>
+      <button onclick="quickPct(-5)">−5%</button>
+      <button onclick="quickPct(-10)">−10%</button>
+      <button onclick="quickPct(-25)">−25%</button>
+      <button onclick="quickPct(-50)">−50%</button>
+      <button onclick="quickPct(5)">+5%</button>
+      <button onclick="quickPct(10)">+10%</button>
+      <button onclick="quickPct(25)">+25%</button>
+      <button onclick="quickPct(50)">+50%</button>
+      <button class="live-btn" onclick="useLivePrice()">⚡ use live</button>
     </div>
   </div>
 
@@ -321,27 +342,26 @@
 
 <script>
 // ============================================================
-// CONFIG
+// CONFIG — Aerodrome only
 // ============================================================
-const POOLS = {
-  uni:  { sheetId: "1oJf881yq6bhUSlLBvuiG8n_hj2pWvPO-7lvis0eKXVs", tab: "positions",      name: "UniV3",      pair: "0x9e4a0e8df94a2b80af6a3a6e8a2fa4b3c4e9ffc5" },
-  aero: { sheetId: "14zlvfkLX8Hs3_duak9ID0BGsLfyIVJ_UZ9MOP9lY-oE", tab: "aero_positions", name: "Aerodrome",  pair: "0xbe4C36B9542610dF83Ca690c8b5BC53BbbC5d542" },
-};
+const SHEET_ID = "14zlvfkLX8Hs3_duak9ID0BGsLfyIVJ_UZ9MOP9lY-oE";
+const POSITIONS_TAB = "aero_positions";
+const PAIR_ADDRESS = "0xbe4C36B9542610dF83Ca690c8b5BC53BbbC5d542";
+
 const DEC0 = 6n,  DEC1 = 18n;
 const SCALE_DEC0 = 10n ** DEC0;
 const SCALE_DEC1 = 10n ** DEC1;
 
-let activePool = "aero";
-let positions  = null;
-let livePrice  = null;
+let positions = null;
+let livePrice = null;
+let livePriceTimer = null;
 
 // ============================================================
 // DATA LOADING
 // ============================================================
 async function loadPositions() {
-  const cfg = POOLS[activePool];
-  const url = `https://opensheet.elk.sh/${cfg.sheetId}/${cfg.tab}`;
-  document.getElementById("dataStatus").textContent = `Loading ${cfg.name} positions…`;
+  const url = `https://opensheet.elk.sh/${SHEET_ID}/${POSITIONS_TAB}`;
+  document.getElementById("dataStatus").textContent = "Loading positions…";
   const r = await fetch(url);
   if (!r.ok) throw new Error("HTTP " + r.status);
   const rows = await r.json();
@@ -355,49 +375,59 @@ async function loadPositions() {
       tickUpper: parseInt(r.tick_upper),
       liquidity: BigInt(liqStr || "0"),
     };
-  }).filter(p => p.liquidity > 0n && Number.isFinite(p.tickLower) && Number.isFinite(p.tickUpper));
+  }).filter(p => p.liquidity > 0n
+              && Number.isFinite(p.tickLower)
+              && Number.isFinite(p.tickUpper));
 
   const ours = positions.filter(p => p.isOurs).length;
   document.getElementById("dataStatus").textContent =
-    `${cfg.name} · ${positions.length} positions (${ours} ours) loaded`;
+    `Aerodrome · ${positions.length} active positions (${ours} ours)`;
 }
 
 async function loadLivePrice() {
   try {
-    const cfg = POOLS[activePool];
-    const r = await fetch(`https://api.dexscreener.com/latest/dex/pairs/base/${cfg.pair}`);
+    const r = await fetch(`https://api.dexscreener.com/latest/dex/pairs/base/${PAIR_ADDRESS}`);
     const data = await r.json();
-    livePrice = data?.pair?.priceUsd ? parseFloat(data.pair.priceUsd) : null;
-  } catch(e) { livePrice = null; }
+    const p = data?.pair?.priceUsd ? parseFloat(data.pair.priceUsd) : null;
+    if (p && p > 0) {
+      livePrice = p;
+      const badge = document.getElementById("livePriceBadge");
+      if (badge) badge.style.display = "inline-flex";
+      document.getElementById("livePriceVal").textContent = "$" + p.toFixed(6);
+    }
+  } catch(e) { /* keep previous livePrice */ }
+}
+
+function startLivePriceLoop() {
+  if (livePriceTimer) clearInterval(livePriceTimer);
+  livePriceTimer = setInterval(loadLivePrice, 60000);
 }
 
 // ============================================================
-// PRICE / TICK / SQRT MATH
+// MATH (verified by audit — symmetric, conservative)
 // ============================================================
 const Q96  = 2n ** 96n;
 const Q96f = Math.pow(2, 96);
 
-function priceToSqrtPriceX96(priceUsdPerLmts) {
-  const rawRatio = (1 / priceUsdPerLmts) * 1e12;
-  const sqrtRaw = Math.sqrt(rawRatio);
-  return BigInt(Math.round(sqrtRaw * Q96f));
+function priceToSqrtPriceX96(price) {
+  const rawRatio = (1 / price) * 1e12;
+  return BigInt(Math.round(Math.sqrt(rawRatio) * Q96f));
 }
-function sqrtPriceX96ToPrice(sqrtPx96) {
-  const f = Number(sqrtPx96) / Q96f;
-  const rawRatio = f * f;
-  if (rawRatio === 0) return 0;
-  return 1e12 / rawRatio;
+function sqrtPriceX96ToPrice(s) {
+  const f = Number(s) / Q96f;
+  return f === 0 ? 0 : 1e12 / (f * f);
 }
-function priceToTick(priceUsdPerLmts) {
-  return Math.floor(Math.log(1e12 / priceUsdPerLmts) / Math.log(1.0001));
+function priceToTick(p) {
+  return Math.floor(Math.log(1e12 / p) / Math.log(1.0001));
 }
-function tickToSqrtPriceX96(tick) {
-  return BigInt(Math.round(Math.pow(1.0001, tick / 2) * Q96f));
+function tickToSqrtPriceX96(t) {
+  return BigInt(Math.round(Math.pow(1.0001, t/2) * Q96f));
+}
+function tickFromSqrt(s) {
+  const r = Number(s) / Q96f;
+  return r <= 0 ? 0 : Math.floor(2 * Math.log(r) / Math.log(1.0001));
 }
 
-// ============================================================
-// TICK MAP / ACTIVE L
-// ============================================================
 function buildTickMap(includeOurs) {
   const m = new Map();
   for (const p of positions) {
@@ -423,16 +453,12 @@ function activeOursAtTick(tick) {
   return L;
 }
 
-// ============================================================
-// SWAP SIM
-// ============================================================
 function simulate(currentPrice, targetPrice, includeOurs) {
   const curTick = priceToTick(currentPrice);
   const tgtTick = priceToTick(targetPrice);
   const direction = targetPrice < currentPrice ? "down"
                   : targetPrice > currentPrice ? "up" : "none";
   const ascending = direction === "down";
-
   const sqrtPCur = priceToSqrtPriceX96(currentPrice);
   const sqrtPTgt = priceToSqrtPriceX96(targetPrice);
 
@@ -441,30 +467,50 @@ function simulate(currentPrice, targetPrice, includeOurs) {
     currentPrice, targetPrice, curTick, tgtTick,
     usdcIn: 0, usdcOut: 0, lmtsIn: 0, lmtsOut: 0,
     segments: [],
+    zeroLiquidityRange: null,  // {priceFrom, priceTo} if traversed gap
   };
   if (direction === "none") return res;
 
   const tickMap = buildTickMap(includeOurs);
   const boundaryTicks = [...tickMap.keys()].sort((a,b) => a - b);
-
   let L = activeLAtTick(curTick, includeOurs);
   let sqrtP = sqrtPCur;
+
+  // Track zero-liq gap span for warning
+  let zeroFrom = null;
+
+  function trackZero(s, sNext) {
+    if (L === 0n) {
+      if (zeroFrom === null) zeroFrom = sqrtPriceX96ToPrice(s);
+      const pNext = sqrtPriceX96ToPrice(sNext);
+      if (res.zeroLiquidityRange === null) {
+        res.zeroLiquidityRange = { priceFrom: zeroFrom, priceTo: pNext };
+      } else {
+        res.zeroLiquidityRange.priceTo = pNext;
+      }
+    } else {
+      zeroFrom = null;
+    }
+  }
 
   if (ascending) {
     const relevant = boundaryTicks.filter(t => t > curTick);
     let done = false;
     for (const tNext of relevant) {
       if (tNext > tgtTick) {
+        trackZero(sqrtP, sqrtPTgt);
         consume(res, sqrtP, sqrtPTgt, L, tickFromSqrt(sqrtP), tgtTick, true, includeOurs);
         done = true; break;
       }
       const sqrtTNext = tickToSqrtPriceX96(tNext);
+      trackZero(sqrtP, sqrtTNext);
       consume(res, sqrtP, sqrtTNext, L, tickFromSqrt(sqrtP), tNext, true, includeOurs);
       sqrtP = sqrtTNext;
       L += tickMap.get(tNext) || 0n;
       if (tNext === tgtTick) { done = true; break; }
     }
     if (!done && sqrtP < sqrtPTgt) {
+      trackZero(sqrtP, sqrtPTgt);
       consume(res, sqrtP, sqrtPTgt, L, tickFromSqrt(sqrtP), tgtTick, true, includeOurs);
     }
   } else {
@@ -472,28 +518,25 @@ function simulate(currentPrice, targetPrice, includeOurs) {
     let done = false;
     for (const tNext of relevant) {
       if (tNext < tgtTick) {
+        trackZero(sqrtP, sqrtPTgt);
         consume(res, sqrtP, sqrtPTgt, L, tickFromSqrt(sqrtP), tgtTick, false, includeOurs);
         done = true; break;
       }
       const sqrtTNext = tickToSqrtPriceX96(tNext);
       if (sqrtTNext >= sqrtP) continue;
+      trackZero(sqrtP, sqrtTNext);
       consume(res, sqrtP, sqrtTNext, L, tickFromSqrt(sqrtP), tNext, false, includeOurs);
       sqrtP = sqrtTNext;
       L -= tickMap.get(tNext) || 0n;
       if (tNext === tgtTick) { done = true; break; }
     }
     if (!done && sqrtP > sqrtPTgt) {
+      trackZero(sqrtP, sqrtPTgt);
       consume(res, sqrtP, sqrtPTgt, L, tickFromSqrt(sqrtP), tgtTick, false, includeOurs);
     }
   }
 
   return res;
-}
-
-function tickFromSqrt(sqrtPx96) {
-  const r = Number(sqrtPx96) / Q96f;
-  if (r <= 0) return 0;
-  return Math.floor(2 * Math.log(r) / Math.log(1.0001));
 }
 
 function consume(res, sqrtA, sqrtB, L, tickStart, tickEnd, ascending, includeOurs) {
@@ -517,24 +560,23 @@ function consume(res, sqrtA, sqrtB, L, tickStart, tickEnd, ascending, includeOur
     }
   }
 
-  const ourL = includeOurs ? activeOursAtTick(tickStart) : 0n;
   res.segments.push({
-    tickStart, tickEnd,
+    tickStart, tickEnd, L,
+    ourL: includeOurs ? activeOursAtTick(tickStart) : 0n,
     priceStart: sqrtPriceX96ToPrice(sqrtA),
     priceEnd:   sqrtPriceX96ToPrice(sqrtB),
-    L, ourL,
     deltaUsdc: dUsdc,
     deltaLmts: dLmts,
   });
 }
 
-function inputHuman(sim)  { return sim.direction === "down" ? sim.lmtsIn  : sim.usdcIn;  }
-function outputHuman(sim) { return sim.direction === "down" ? sim.usdcOut : sim.lmtsOut; }
-function inputSym(sim)    { return sim.direction === "down" ? "LMTS" : "USDC"; }
-function outputSym(sim)   { return sim.direction === "down" ? "USDC" : "LMTS"; }
+const inputHuman  = sim => sim.direction === "down" ? sim.lmtsIn  : sim.usdcIn;
+const outputHuman = sim => sim.direction === "down" ? sim.usdcOut : sim.lmtsOut;
+const inputSym    = sim => sim.direction === "down" ? "LMTS" : "USDC";
+const outputSym   = sim => sim.direction === "down" ? "USDC" : "LMTS";
 
 // ============================================================
-// RENDER
+// FORMATTING
 // ============================================================
 function fmtNum(v, places = 2) {
   if (!isFinite(v)) return "—";
@@ -547,20 +589,37 @@ function fmtShort(v) {
   if (a >= 1e3) return (v/1e3).toFixed(2) + "K";
   return v.toFixed(2);
 }
-function fmtPrice(v)  { return "$" + v.toLocaleString("en-US", { minimumFractionDigits: 4, maximumFractionDigits: 6 }); }
+function fmtPrice(v) {
+  return "$" + v.toLocaleString("en-US", { minimumFractionDigits: 4, maximumFractionDigits: 6 });
+}
 
-function quickSet(cur, tgt) {
-  document.getElementById("curPrice").value = cur;
-  document.getElementById("tgtPrice").value = tgt;
+// ============================================================
+// QUICK ACTIONS — relative to whatever is currently in the input
+// ============================================================
+function quickPct(pct) {
+  const cur = parseFloat(document.getElementById("curPrice").value);
+  if (!cur || cur <= 0) return;
+  const tgt = cur * (1 + pct/100);
+  document.getElementById("tgtPrice").value = tgt.toFixed(6);
   runSim();
 }
+
 function useLivePrice() {
-  if (livePrice) {
+  if (livePrice && livePrice > 0) {
     document.getElementById("curPrice").value = livePrice.toFixed(6);
     runSim();
+  } else {
+    alert("Live price is not loaded yet — try again in a few seconds.");
   }
 }
 
+function onCurPriceChange() {
+  // Just for visual feedback — doesn't auto-run sim
+}
+
+// ============================================================
+// RENDER
+// ============================================================
 let chart = null;
 
 function runSim() {
@@ -600,6 +659,34 @@ function runSim() {
 
   const critical = ranked.filter(r => r.ourPct >= 50);
 
+  // === ZERO-LIQUIDITY GAP WARNING ===
+  // If either scenario passed through a zero-L zone, the math is misleading
+  // because in reality price cannot move through gaps without volume.
+  let warningHtml = "";
+  const gapFull = simFull.zeroLiquidityRange;
+  const gapExt  = simExt.zeroLiquidityRange;
+  if (gapFull || gapExt) {
+    const gap = gapFull || gapExt;
+    const which = gapFull && gapExt ? "both scenarios"
+               : gapFull ? "full pool"
+               : "external-only";
+    const lo = Math.min(gap.priceFrom, gap.priceTo);
+    const hi = Math.max(gap.priceFrom, gap.priceTo);
+    warningHtml = `
+      <div class="warning-box">
+        <div class="head">⚠ Liquidity gap detected</div>
+        <div class="body">
+          The simulated path crosses a price zone with <span class="number">zero liquidity</span>
+          (roughly <span class="number">${fmtPrice(lo)}</span> – <span class="number">${fmtPrice(hi)}</span>) in ${which}.
+          The volume numbers below underestimate reality: in a real swap the price cannot pass
+          through an empty zone without first being filled by new LP positions or by the swapper
+          taking the price to the next active range. Pick a target price that stays within
+          existing LP coverage for accurate impact estimates.
+        </div>
+      </div>`;
+  }
+
+  // === BUILD HTML ===
   out.innerHTML = `
     <div class="panel">
       <div class="panel-title">Scenario Comparison
@@ -628,6 +715,8 @@ function runSim() {
         </div>
       </div>
 
+      ${warningHtml}
+
       <div class="insight">
         <div class="head">Our liquidity contribution</div>
         <div class="body">
@@ -652,8 +741,8 @@ function runSim() {
     </div>
 
     <div class="panel">
-      <div class="panel-title">Segment breakdown (top 12 by our-LP %)
-        <span class="pill">full-pool simulation</span>
+      <div class="panel-title">Segment breakdown
+        <span class="pill">full-pool · top by our %</span>
       </div>
       <div class="table-wrap">
         <table class="segs">
@@ -663,14 +752,25 @@ function runSim() {
           </tr></thead>
           <tbody>
             ${(() => {
+              // Show all segments (including zero-L) but mark them
+              const allSegs = simFull.segments.map(s => ({
+                ...s,
+                ourPct: s.L > 0n ? Number(s.ourL) / Number(s.L) * 100 : 0,
+                cost: simFull.direction === "down" ? s.deltaLmts : s.deltaUsdc,
+              })).sort((a,b) => b.ourPct - a.ourPct || b.cost - a.cost);
+
               let cum = 0;
-              return ranked.slice(0, 12).map(s => {
+              return allSegs.slice(0, 15).map(s => {
                 cum += s.cost;
-                const cls = s.ourPct >= 50 ? "dom-high" : s.ourPct >= 25 ? "dom-mid" : "";
-                return `<tr>
-                  <td>${s.priceStart.toFixed(5)} → ${s.priceEnd.toFixed(5)}</td>
-                  <td class="${cls}">${s.ourPct.toFixed(1)}%</td>
-                  <td>${fmtShort(Number(s.L))}</td>
+                const isZero = s.L === 0n;
+                const cls = isZero ? "zero-liq"
+                        : s.ourPct >= 50 ? ""
+                        : "";
+                const ourCls = s.ourPct >= 50 ? "dom-high" : s.ourPct >= 25 ? "dom-mid" : "";
+                return `<tr class="${cls}">
+                  <td>${s.priceStart.toFixed(5)} → ${s.priceEnd.toFixed(5)}${isZero ? " (gap)" : ""}</td>
+                  <td class="${ourCls}">${isZero ? "—" : s.ourPct.toFixed(1) + "%"}</td>
+                  <td>${isZero ? "0" : fmtShort(Number(s.L))}</td>
                   <td>${fmtNum(s.cost, 2)}</td>
                   <td style="color:var(--muted)">${fmtNum(cum, 2)}</td>
                 </tr>`;
@@ -730,26 +830,21 @@ function drawPathChart(simFull, sym) {
   });
 }
 
-async function switchPool(p) {
-  if (p === activePool) return;
-  activePool = p;
-  document.getElementById("btnUni").classList.toggle("active",  p === "uni");
-  document.getElementById("btnAero").classList.toggle("active", p === "aero");
-  document.getElementById("poolPill").textContent = POOLS[p].name;
-  document.getElementById("output").innerHTML = '<div class="loading"><div class="spinner"></div>Reloading…</div>';
-  try {
-    await loadPositions();
-    await loadLivePrice();
-    document.getElementById("output").innerHTML = "";
-  } catch(e) {
-    document.getElementById("output").innerHTML = '<div class="err">Failed to load: ' + e.message + '</div>';
-  }
-}
-
+// ============================================================
+// INIT
+// ============================================================
 (async () => {
   try {
     await loadPositions();
     await loadLivePrice();
+    startLivePriceLoop();
+
+    // Auto-prefill current price from live if available
+    if (livePrice && livePrice > 0) {
+      document.getElementById("curPrice").value = livePrice.toFixed(6);
+      // Set sensible default target = -29% for "what to drop"
+      document.getElementById("tgtPrice").value = (livePrice * 0.71).toFixed(6);
+    }
   } catch(e) {
     document.getElementById("output").innerHTML = '<div class="err">Failed to load: ' + e.message + '</div>';
   }
