@@ -412,7 +412,10 @@ async function loadPositions() {
   if (!r.ok) throw new Error("HTTP " + r.status);
   const rows = await r.json();
   positions = rows.map(row => {
-    const liqStr = String(row.liquidity || "0").trim().split(".")[0];
+    const liqStr = String(r.liquidity || "0")
+      .trim()
+      .split(".")[0]
+      .replace(/[^\d]/g, "");
     return {
       tokenId:   row.token_id || "",
       label:     row.label || "",
@@ -1145,7 +1148,7 @@ function runSim() {
         <table class="segs">
           <thead><tr>
             <th>Price range</th><th>Our %</th><th>Total L</th>
-            <th>Cost (${sym})</th><th>Cum. cost</th>
+            <th>Cost (${sym})</th>
           </tr></thead>
           <tbody>
             ${(() => {
@@ -1159,9 +1162,9 @@ function runSim() {
                 cost: simFull.direction === "down" ? s.deltaLmts : s.deltaUsdc,
               })).sort((a, b) => b.ourPct - a.ourPct || b.cost - a.cost);
 
-              let cum = 0;
+              
               return allSegs.slice(0, 15).map(s => {
-                cum += s.cost;
+               
                 const isZero = s.L === 0n;
                 const cls = isZero ? "zero-liq" : "";
                 const ourCls = s.ourPct >= 50 ? "dom-high" : s.ourPct >= 25 ? "dom-mid" : "";
@@ -1170,7 +1173,7 @@ function runSim() {
                   <td class="${ourCls}">${isZero ? "—" : s.ourPct.toFixed(1) + "%"}</td>
                   <td>${isZero ? "0" : fmtShort(Number(s.L))}</td>
                   <td>${fmtNum(s.cost, 2)}</td>
-                  <td style="color:var(--muted)">${fmtNum(cum, 2)}</td>
+            
                 </tr>`;
               }).join("");
             })()}
