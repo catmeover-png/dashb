@@ -412,7 +412,7 @@ async function loadPositions() {
   if (!r.ok) throw new Error("HTTP " + r.status);
   const rows = await r.json();
   positions = rows.map(row => {
-    const liqStr = String(r.liquidity || "0")
+    const liqStr = String(row.liquidity || "0")
       .trim()
       .split(".")[0]
       .replace(/[^\d]/g, "");
